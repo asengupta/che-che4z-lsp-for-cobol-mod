@@ -2370,7 +2370,14 @@ integerLiteral
 //cics_conditions: EOC | EODS | INVMPSZ | INVPARTN | INVREQ | MAPFAIL | PARTNFAIL | RDATT | UNEXPIN;
 
 literal
-   : NONNUMERICLITERAL | figurativeConstant | numericLiteral | booleanLiteral | charString | dialectLiteral | utfLiteral | hexadecimalUtfLiteral
+   : NONNUMERICLITERAL
+   | figurativeConstant
+   | numericLiteral
+   | booleanLiteral
+   | charString
+   | dialectLiteral
+   | utfLiteral
+   | hexadecimalUtfLiteral
    ;
 
 dialectLiteral: dialectNodeFiller+;
