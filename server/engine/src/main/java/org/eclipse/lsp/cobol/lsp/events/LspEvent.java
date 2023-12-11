@@ -12,9 +12,11 @@
  *    Broadcom, Inc. - initial API and implementation
  *
  */
-package org.eclipse.lsp.cobol.lsp;
+package org.eclipse.lsp.cobol.lsp.events;
 
 import com.google.common.collect.ImmutableList;
+import org.eclipse.lsp.cobol.lsp.LspEventCancelCondition;
+import org.eclipse.lsp.cobol.lsp.LspEventDependency;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -37,7 +39,7 @@ public interface LspEvent<T> {
 
   /**
    * Dependency data for the event. Allow to postpone the execution.
-   * @return Dependencies is any.
+   * @return Dependencies if any.
    */
   default List<LspEventDependency> getDependencies() {
     return ImmutableList.of();

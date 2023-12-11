@@ -19,6 +19,7 @@ import com.google.inject.Inject;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.lsp.cobol.lsp.*;
+import org.eclipse.lsp.cobol.lsp.events.LspEvent;
 
 /** Service to handle dirty cache */
 public class DirtyCacheHandlerService {

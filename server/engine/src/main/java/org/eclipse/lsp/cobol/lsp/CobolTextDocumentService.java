@@ -21,6 +21,10 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.lsp.cobol.core.model.extendedapi.ExtendedApiResult;
+import org.eclipse.lsp.cobol.lsp.events.CodeActionEvent;
+import org.eclipse.lsp.cobol.lsp.events.DidChangeEvent;
+import org.eclipse.lsp.cobol.lsp.events.DidCloseEvent;
+import org.eclipse.lsp.cobol.lsp.events.DidOpenEvent;
 import org.eclipse.lsp.cobol.lsp.handlers.extended.AnalysisHandler;
 import org.eclipse.lsp.cobol.lsp.handlers.text.*;
 import org.eclipse.lsp.cobol.lsp.jrpc.ExtendedApi;
@@ -124,32 +128,29 @@ public class CobolTextDocumentService implements TextDocumentService, ExtendedAp
 
   @Override
   public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params) {
-    return lspMessageDispatcher.publish(() -> codeActionHandler.codeAction(params));
+    return lspMessageDispatcher.publish(new CodeActionEvent(codeActionHandler, params));
   }
 
   @Override
   public void didOpen(DidOpenTextDocumentParams params) {
     try {
-      didOpenHandler.createEvent(params).execute();
+      new DidOpenEvent(didOpenHandler, params).execute();
     } catch (ExecutionException | InterruptedException e) {
       LOG.error(e.getMessage(), e);
     }
   }
 
-  @SneakyThrows
   @Override
   public void didChange(DidChangeTextDocumentParams params) {
-    lspMessageDispatcher.publish(() -> {
-      didChangeHandler.didChange(params);
-      return null;
-    });
+    lspMessageDispatcher.publish(new DidChangeEvent(didChangeHandler, params));
   }
 
   @Override
   public void didClose(DidCloseTextDocumentParams params) {
     try {
+      new DidCloseEvent(didCloseHandler, params).execute();
       didCloseHandler.didClose(params);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException | ExecutionException e) {
       LOG.error(e.getMessage(), e);
     }
   }

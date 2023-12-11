@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.lsp.cobol.lsp.events.LspEvent;
+import org.eclipse.lsp.cobol.lsp.events.PoisonPillEvent;
 
 /**
  * Queue LSP messages and handle the order of messages execution.
@@ -27,8 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Singleton
 public class LspMessageDispatcher {
-  private static final LspEvent<Void> POISON_PILL = () -> null;
-
   private final BlockingDeque<LspEvent<?>> eventQueue = new LinkedBlockingDeque<>();
   private final Map<LspEvent<?>, CompletableFuture<?>> eventResults = Collections.synchronizedMap(new HashMap<>());
 
@@ -95,7 +95,7 @@ public class LspMessageDispatcher {
 
   private void loop() throws InterruptedException {
     LspEvent<?> nextEvent = eventQueue.take();
-    while (nextEvent != POISON_PILL) {
+    while (nextEvent != PoisonPillEvent.instance) {
       try {
         handleEvent((CompletableFuture<Object>) eventResults.remove(nextEvent), nextEvent);
       } catch (Exception e) {
@@ -141,6 +141,6 @@ public class LspMessageDispatcher {
    * @throws InterruptedException can be interrupted
    */
   public void stop() throws InterruptedException {
-    eventQueue.put(POISON_PILL);
+    eventQueue.put(PoisonPillEvent.instance);
   }
 }

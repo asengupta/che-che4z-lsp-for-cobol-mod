@@ -17,7 +17,7 @@ package org.eclipse.lsp.cobol.lsp.handlers.text;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import org.eclipse.lsp.cobol.lsp.AsyncAnalysisService;
-import org.eclipse.lsp.cobol.lsp.LspEvent;
+import org.eclipse.lsp.cobol.lsp.events.LspEvent;
 import org.eclipse.lsp.cobol.lsp.LspEventDependency;
 import org.eclipse.lsp.cobol.service.DocumentModelService;
 import org.eclipse.lsp.cobol.service.delegates.references.Occurrences;

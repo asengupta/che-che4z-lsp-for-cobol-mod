@@ -14,6 +14,7 @@
  */
 package org.eclipse.lsp.cobol.lsp;
 
+import org.eclipse.lsp.cobol.lsp.events.LspEvent;
 import org.eclipse.lsp4j.InitializeResult;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
