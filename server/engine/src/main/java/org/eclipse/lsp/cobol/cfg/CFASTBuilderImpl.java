@@ -120,7 +120,7 @@ public class CFASTBuilderImpl implements CFASTBuilder {
 
   private void traverse(ProgramNode node, List<Program> programs) {
     node.getChildren().stream()
-        .filter(it -> it instanceof DivisionNode)
+        .filter(DivisionNode.class::isInstance)
         .map(DivisionNode.class::cast)
         .filter(it -> it.getDivisionType() == DivisionType.PROCEDURE_DIVISION)
         .findFirst()

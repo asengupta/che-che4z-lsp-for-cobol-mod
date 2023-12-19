@@ -21,6 +21,7 @@ import org.eclipse.lsp.cobol.common.message.MessageService;
 import org.eclipse.lsp.cobol.core.engine.dialects.WorkingFolderService;
 import org.eclipse.lsp.cobol.core.messages.PropertiesMessageService;
 import org.eclipse.lsp.cobol.core.strategy.CobolErrorStrategy;
+import org.eclipse.lsp.cobol.parser.MessageServiceParser;
 import org.eclipse.lsp.cobol.service.settings.SettingsService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

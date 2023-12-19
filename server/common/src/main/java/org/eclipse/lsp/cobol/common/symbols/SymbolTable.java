@@ -35,7 +35,7 @@ public class SymbolTable {
   Multimap<String, VariableNode> variables = ArrayListMultimap.create();
 
   /**
-   * Generates unique key for the prorgam
+   * Generates unique key for the program
    * @param program node
    * @return string value of a generated key
    */

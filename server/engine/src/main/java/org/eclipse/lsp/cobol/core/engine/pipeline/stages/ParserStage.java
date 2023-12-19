@@ -22,8 +22,8 @@ import org.eclipse.lsp.cobol.common.dialects.DialectOutcome;
 import org.eclipse.lsp.cobol.common.message.MessageService;
 import org.eclipse.lsp.cobol.common.model.tree.Node;
 import org.eclipse.lsp.cobol.core.CobolParser;
-import org.eclipse.lsp.cobol.core.AstBuilder;
-import org.eclipse.lsp.cobol.core.SplitParser;
+import org.eclipse.lsp.cobol.parser.CstBuilder;
+import org.eclipse.lsp.cobol.parser.SplitParser;
 import org.eclipse.lsp.cobol.core.engine.analysis.AnalysisContext;
 import org.eclipse.lsp.cobol.core.engine.pipeline.PipelineResult;
 import org.eclipse.lsp.cobol.core.engine.pipeline.Stage;
@@ -47,7 +47,7 @@ public class ParserStage implements Stage<ParserStageResult, DialectOutcome> {
             .addAll(prevPipelineResult.getData().getDialectNodes())
             .build());
     ParserListener listener = new ParserListener(context.getExtendedDocument(), context.getCopybooksRepository());
-    AstBuilder parser = new SplitParser(CharStreams.fromString(context.getExtendedDocument().toString()),
+    CstBuilder parser = new SplitParser(CharStreams.fromString(context.getExtendedDocument().toString()),
             listener,
             new CobolErrorStrategy(messageService),
             treeListener);

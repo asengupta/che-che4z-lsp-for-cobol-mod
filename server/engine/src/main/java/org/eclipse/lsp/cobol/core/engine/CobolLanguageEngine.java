@@ -39,7 +39,7 @@ import org.eclipse.lsp.cobol.core.engine.errors.ErrorFinalizerService;
 import org.eclipse.lsp.cobol.core.engine.pipeline.Pipeline;
 import org.eclipse.lsp.cobol.core.engine.pipeline.stages.*;
 import org.eclipse.lsp.cobol.core.engine.pipeline.PipelineResult;
-import org.eclipse.lsp.cobol.core.engine.processor.AstProcessor;
+import org.eclipse.lsp.cobol.core.engine.ast.AstProcessor;
 import org.eclipse.lsp.cobol.core.engine.symbols.SymbolsRepository;
 import org.eclipse.lsp.cobol.core.preprocessor.TextPreprocessor;
 import org.eclipse.lsp.cobol.core.preprocessor.delegates.GrammarPreprocessor;
