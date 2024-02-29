@@ -45,6 +45,7 @@ import org.eclipse.lsp.cobol.core.preprocessor.TextPreprocessor;
 import org.eclipse.lsp.cobol.core.preprocessor.delegates.GrammarPreprocessor;
 import org.eclipse.lsp.cobol.core.semantics.CopybooksRepository;
 import org.eclipse.lsp.cobol.service.settings.CachingConfigurationService;
+import org.eclipse.lsp.cobol.service.settings.layout.CodeLayoutStore;
 import org.eclipse.lsp4j.Location;
 import picocli.CommandLine;
 
@@ -196,6 +197,7 @@ public class Cli implements Callable<Integer> {
     CachingConfigurationService cachingConfigurationService =
         diCtx.getInstance(CachingConfigurationService.class);
     AstProcessor astProcessor = diCtx.getInstance(AstProcessor.class);
+    CodeLayoutStore layoutStore = diCtx.getInstance(CodeLayoutStore.class);
 
     Pipeline pipeline = new Pipeline();
     pipeline.add(new CompilerDirectivesStage(messageService));
@@ -211,7 +213,8 @@ public class Cli implements Callable<Integer> {
               subroutineService,
               cachingConfigurationService,
               dialectService,
-              astProcessor));
+              astProcessor,
+              layoutStore));
     }
     return pipeline;
   }
