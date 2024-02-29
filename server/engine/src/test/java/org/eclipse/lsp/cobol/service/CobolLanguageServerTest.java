@@ -98,7 +98,6 @@ class CobolLanguageServerTest {
   @Test
   void initialized() throws InterruptedException {
     SettingsService settingsService = mock(SettingsServiceImpl.class);
-    WatcherService watchingService = mock(WatcherService.class);
     LocaleStore localeStore = mock(LocaleStore.class);
     CopybookNameService copybookNameService = mock(CopybookNameService.class);
     MessageService messageService = mock(MessageService.class);
@@ -119,6 +118,7 @@ class CobolLanguageServerTest {
 
     lspEventConsumer.startConsumer();
     InitializedHandler initializedHandler = mock(InitializedHandler.class);
+    doNothing().when(initializedHandler).initialized(any(InitializedParams.class));
     CobolLanguageServer server =
             new CobolLanguageServer(
                     lspMessageBroker,
@@ -126,7 +126,7 @@ class CobolLanguageServerTest {
                     null,
                     new ExitHandler(stateService),
                     new ShutdownHandler(stateService, lspMessageBroker),
-                    new InitializeHandler(watchingService),
+                    mock(InitializeHandler.class),
                     initializedHandler,
                     lspEventConsumer);
 
