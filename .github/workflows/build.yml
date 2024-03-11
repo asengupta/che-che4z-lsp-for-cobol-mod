@@ -161,8 +161,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-11, ubuntu-latest]
-        arch: [x64, arm64]
+        os: [macos-13-xlarge]
+        arch: [arm64]
         include:
           - os: ubuntu-latest
             arch: x64
@@ -175,7 +175,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: echo "target=win32-${{ matrix.arch }}" >> $env:GITHUB_ENV
       - shell: sh
-        if: matrix.os == 'macos-11'
+        if: matrix.os == 'macos-13-xlarge'
         run: echo "target=darwin-${{ matrix.arch }}" >> $GITHUB_ENV
       - shell: sh
         if: matrix.os == 'ubuntu-latest'
@@ -183,9 +183,9 @@ jobs:
 
       # Setup envierment
       - name: switch xcode to 12.5.1
-        if: matrix.os == 'macos-11'
+        if: matrix.os == 'macos-13-xlarge'
         run: |
-          sudo xcode-select -s /Applications/Xcode_12.5.1.app/Contents/Developer
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
           xcodebuild -version
       - uses: al-cheb/configure-pagefile-action@v1.2
         if: matrix.os == 'windows-latest'
@@ -261,12 +261,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-11, ubuntu-latest]
-        arch: [x64, arm64]
-        include:
-          - os: ubuntu-latest
-            arch: x64
-            container: alpine:3.17
+        os: [macos-13-xlarge]
+        arch: [arm64]
     runs-on: ${{ matrix.os }}
     needs: [buildNative,buildPlatformIndependedPart]
     steps:
@@ -275,7 +271,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: echo "target=win32-${{ matrix.arch }}" >> $env:GITHUB_ENV
       - shell: sh
-        if: matrix.os == 'macos-11'
+        if: matrix.os == 'macos-13-xlarge'
         run: echo "target=darwin-${{ matrix.arch }}" >> $GITHUB_ENV
       - shell: sh
         if: matrix.os == 'ubuntu-latest'
