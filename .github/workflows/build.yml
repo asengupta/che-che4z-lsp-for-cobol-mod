@@ -161,12 +161,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13-xlarge]
+        os: [ubuntu-latest]
         arch: [arm64]
-        include:
-          - os: ubuntu-latest
-            arch: x64
-            container: alpine:3.17
     runs-on: ${{ matrix.os }}
     needs: [generateNativeConfig]
     steps:
@@ -206,7 +202,7 @@ jobs:
           # native-image-job-reports: 'true'
           cache: 'maven'
       - uses: graalvm/setup-graalvm@v1
-        if: matrix.os != 'ubuntu-latest' || matrix.arch != 'x64'
+        if: matrix.os != 'ubuntu-latest'
         with:
           version: '22.3.0'
           java-version: '11'
@@ -231,9 +227,27 @@ jobs:
           cp -rp native-build-configuration/session-* server/engine/src/main/resources/META-INF/native-image/
           rm server/engine/src/main/resources/META-INF/native-image/session-*/jni-config.json
         shell: bash
+      - uses: uraimo/run-on-arch-action@v2
+        name: Build Linux aarch64
+        if: matrix.os == 'ubuntu-latest' || matrix.arch == 'arm64'
+        with:
+          arch: aarch64
+          distro: ubuntu22.04
+          githubToken: ${{ github.token }}
+          base_image: ghcr.io/graalvm/graalvm-ce:ol8-java11-22.3.3@sha256:1622fe4beeb753c07e9196d9ab68755f42d661872a1e9b548b549d6e60194477
+          shell: /bin/bash
+          dockerRunArgs: |
+            --volume "./server:/server"
+          run: |
+            gu install native-image
+            microdnf update
+            microdnf install maven -y
+            gu install native-image
+            cd /server
+            mvn -e -B -Pnative -DskipTests clean package
       - name: Build with Maven
         working-directory: server
-        if: matrix.os != 'ubuntu-latest' || matrix.arch != 'x64'
+        if: matrix.os != 'ubuntu-latest' && matrix.arch != 'x64'
         run: mvn -e -B -Pnative -DskipTests clean package
       - name: Build with Maven for Linux
         if: matrix.os == 'ubuntu-latest' && matrix.arch == 'x64'
@@ -261,7 +275,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13-xlarge]
+        os: [ubuntu-latest]
         arch: [arm64]
     runs-on: ${{ matrix.os }}
     needs: [buildNative,buildPlatformIndependedPart]
