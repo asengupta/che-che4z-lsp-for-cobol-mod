@@ -22,6 +22,7 @@ import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.eclipse.lsp.cobol.core.CobolProcedureDivisionLexer;
 import org.eclipse.lsp.cobol.core.CobolProcedureDivisionParser;
 import org.eclipse.lsp.cobol.core.CobolProcedureDivisionParser.*;
+import org.eclipse.lsp.cobol.core.cst.Skipped;
 import org.eclipse.lsp.cobol.core.cst.base.CstNode;
 import org.eclipse.lsp.cobol.core.cst.procedure.*;
 import org.eclipse.lsp.cobol.core.hw.Token;
@@ -73,7 +74,7 @@ public class ProcedureDivisionAntlrAdapter {
     LinkedList<ParserRuleContext> genStack = new LinkedList<>();
     genStack.push(pdbCtx);
 
-    // make a free flat
+    // make a tree flat
     List<CstNode> nodes = cstNode.getChildren().stream()
             .flatMap(m -> (m instanceof Section) ? Stream.concat(Stream.of(m), m.getChildren().stream()) : Stream.of(m))
             .flatMap(m -> (m instanceof Paragraph) ? Stream.concat(Stream.of(m), m.getChildren().stream()) : Stream.of(m))
@@ -85,6 +86,10 @@ public class ProcedureDivisionAntlrAdapter {
       CstNode node = nodes.get(idx);
 
       if (node instanceof Token) {
+        continue;
+      }
+
+      if (node instanceof Skipped) {
         continue;
       }
 

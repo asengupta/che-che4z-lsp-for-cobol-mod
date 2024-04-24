@@ -323,8 +323,9 @@ public class CobolParser {
     if (!isInAriaA(nameToken)) {
       return false;
     }
-    return  true;
+    return true;
   }
+
   private boolean isDeclaratives() {
     return matchSeq("DECLARATIVES", ".") && isInAriaA(ctx.getLexer().peek(null).get(0));
   }
@@ -497,12 +498,26 @@ public class CobolParser {
   }
 
   private void skipSkipToken() {
-    if (match("SKIP1")
-            || match("SKIP2")
-            || match("SKIP3")) {
-      consume();
-      if (match(".")) {
-        consume();
+    String skip = null;
+    if (match("SKIP1")) {
+      skip = "SKIP1";
+    }
+    if (match("SKIP2")) {
+      skip = "SKIP2";
+    }
+    if (match("SKIP3")) {
+      skip = "SKIP3";
+    }
+    if (skip != null) {
+      ctx.push(new Skipped());
+      try {
+        consume(skip);
+        spaces();
+        if (match(".")) {
+          consume(".");
+        }
+      } finally {
+        ctx.popAndAttach();
       }
     }
   }
