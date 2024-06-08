@@ -48,6 +48,11 @@
     </properties>
 
     <dependencies>
+<!--        <dependency>-->
+<!--            <groupId>org.eclipse.lsp.cobol</groupId>-->
+<!--            <artifactId>poc-common</artifactId>-->
+<!--            <version>1.0-SNAPSHOT</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.eclipse.lsp.cobol</groupId>
             <artifactId>common</artifactId>
@@ -135,7 +140,6 @@
             <version>${mockito.core.version}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
 
@@ -227,6 +231,9 @@
                     <failsOnError>true</failsOnError>
                     <linkXRef>false</linkXRef>
                     <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <sourceDirectories>
+                        <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                    </sourceDirectories>
                 </configuration>
                 <executions>
                     <execution>

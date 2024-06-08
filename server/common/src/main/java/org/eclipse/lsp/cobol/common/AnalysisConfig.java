@@ -19,6 +19,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+
+import java.net.URI;
 import java.util.*;
 import lombok.Value;
 import org.eclipse.lsp.cobol.common.copybook.CopybookProcessingMode;
@@ -36,8 +38,22 @@ public class AnalysisConfig {
   List<DialectRegistryItem> dialectRegistry;
   Map<String, JsonElement> dialectsSettings;
   List<String> compilerOptions = new ArrayList<>();
+  boolean addCicsPlaceholder;
 
-  /**
+    public AnalysisConfig(CopybookProcessingMode copybookProcessingMode, List<String> dialects, boolean isCicsTranslatorEnabled, List<DialectRegistryItem> dialectRegistry, Map<String, JsonElement> dialectsSettings, boolean addCicsPlaceholder) {
+        this.copybookProcessingMode = copybookProcessingMode;
+        this.dialects = dialects;
+        this.isCicsTranslatorEnabled = isCicsTranslatorEnabled;
+        this.dialectRegistry = dialectRegistry;
+        this.dialectsSettings = dialectsSettings;
+        this.addCicsPlaceholder = addCicsPlaceholder;
+    }
+
+    public AnalysisConfig(CopybookProcessingMode copybookProcessingMode, List<String> dialects, boolean isCicsTranslatorEnabled, List<DialectRegistryItem> dialectRegistry, Map<String, JsonElement> dialectsSettings) {
+        this(copybookProcessingMode, dialects, isCicsTranslatorEnabled, dialectRegistry, dialectsSettings, false);
+    }
+
+    /**
    * Create the default language features config, containing all features and the given copybook
    * processing mode
    *
@@ -51,5 +67,23 @@ public class AnalysisConfig {
         true,
         ImmutableList.of(),
         ImmutableMap.of("target-sql-backend", new Gson().toJsonTree(SQLBackend.DB2_SERVER)));
+  }
+
+  public static AnalysisConfig idmsConfig(String dialectJarPath, CopybookProcessingMode mode) {
+    return new AnalysisConfig(
+            mode,
+        ImmutableList.of("IDMS"),
+        true,
+        ImmutableList.of(new DialectRegistryItem("IDMS", URI.create(String.format("file://%s", dialectJarPath)), "Some Description", "Some ID")),
+        ImmutableMap.of("target-sql-backend", new Gson().toJsonTree(SQLBackend.DB2_SERVER)), true);
+  }
+
+  public static AnalysisConfig substitutingDefaultConfig(CopybookProcessingMode mode) {
+    return new AnalysisConfig(
+            mode,
+        ImmutableList.of(),
+        true,
+        ImmutableList.of(),
+        ImmutableMap.of("target-sql-backend", new Gson().toJsonTree(SQLBackend.DB2_SERVER)), true);
   }
 }

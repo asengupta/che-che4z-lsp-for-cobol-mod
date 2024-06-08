@@ -34,6 +34,7 @@ import org.eclipse.lsp.cobol.core.visitor.ParserListener;
 import org.eclipse.lsp4j.Location;
 
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +60,8 @@ public class ParserStage implements Stage<ParserStageResult, DialectOutcome> {
               listener, errorStrategy, treeListener)
               : new AntlrCobolParser(CharStreams.fromString(context.getExtendedDocument().toString()),
               listener, errorStrategy, treeListener);
+      java.util.logging.Logger logger = Logger.getLogger(ParserStage.class.getName());
+      logger.info("Inlined listing is: \n" + context.getExtendedDocument().toString());
       CobolParser.StartRuleContext tree = parser.runParser();
       context.getAccumulatedErrors().addAll(listener.getErrors());
       context.getAccumulatedErrors().addAll(getParsingError(context, parser));

@@ -42,7 +42,8 @@ public class AntlrCobolParser implements AstBuilder {
   }
   @Override
   public CobolParser.StartRuleContext runParser() {
-    return antlrParser.startRule();
+
+      return antlrParser.startRule();
   }
 
   @Override

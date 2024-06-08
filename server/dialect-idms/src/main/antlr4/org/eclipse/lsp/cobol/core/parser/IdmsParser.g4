@@ -13,7 +13,7 @@
  */
 
 parser grammar IdmsParser;
-options {tokenVocab = IdmsLexer;  superClass = MessageServiceParser;}
+options {tokenVocab = IdmsLexer;  superClass = MessageServiceParser; contextSuperClass = org.eclipse.lsp.cobol.common.poc.AnnotatedParserRuleContext;}
 
 startRule: .*? idmsRules* EOF;
 idmsRules: (idmsStatements | idmsSections | idmsIfStatement | ifStatement | copyIdmsStatement) .*?;
@@ -148,7 +148,15 @@ idmsIfStatement
     ;
 
 idmsStatements
-    : idmsStmtsOptTermOn endClause? idmsOnClause? | idmsStmtsMandTermOn (SEMICOLON_FS idmsOnClause? | DOT_FS)
+    : idmsOptTermStatement | idmsMandTermStatement
+    ;
+
+idmsOptTermStatement
+    : idmsStmtsOptTermOn endClause? idmsOnClause?
+    ;
+
+idmsMandTermStatement
+    : idmsStmtsMandTermOn (SEMICOLON_FS idmsOnClause? | DOT_FS)
     ;
 
 
@@ -157,7 +165,8 @@ idmsStmtsOptTermOn
      connectStatement | dcStatement | dequeueStatement | disconnectStatement | endStatement | endpageStatement | enqueueStatement | eraseStatement | findStatement |
      finishStatement | freeStatement | getStatement | inquireMapMoveStatement | keepStatement | loadStatement | mapStatement | modifyStatement | obtainStatement |
      postStatement | putStatement | readyStatement |rollbackStatement | snapStatement | startpageStatement | storeStatement | waitStatement | writeIdmsStatement |
-     readStatement | acceptStatement | deleteStatement | returnStatement | sendStatement | setStatement
+     readStatement | acceptStatement | deleteStatement | returnStatement | sendStatement | setStatement | addModuleStatement | delModuleStatement |
+     languageIsCobolStatement | moduleSourceStatement | addRecordStatement | delRecordStatement
     ;
 
 idmsStmtsMandTermOn
@@ -165,11 +174,36 @@ idmsStmtsMandTermOn
     ;
 
 idmsOnClause
-    : ON generalIdentifier nextSentence?
+    : DOT_FS?
+//    : ON generalIdentifier nextSentence?
     ;
 
 nextSentence
     : (NEXT SENTENCE) DOT_FS?
+    ;
+
+addModuleStatement
+    : ADD MODULE generalIdentifier (VERSION integerLiteral)? DOT_FS?
+    ;
+
+delModuleStatement
+    : DEL MODULE generalIdentifier (VERSION integerLiteral)? DOT_FS?
+    ;
+
+addRecordStatement
+    : ADD RECORD generalIdentifier (VERSION integerLiteral)? DOT_FS?
+    ;
+
+delRecordStatement
+    : DEL RECORD generalIdentifier (VERSION integerLiteral)? DOT_FS?
+    ;
+
+languageIsCobolStatement
+    : LANGUAGE IS COBOL
+    ;
+
+moduleSourceStatement
+    : MODULE SOURCE
     ;
 
 // abend code statement
@@ -199,7 +233,7 @@ attachTaskCodePriorityClause
 // bind statement
 
 bindStatement
-    : BIND (bindTaskClause | bindTransactionClause | bindRunUnitClause | bindMapClause | bindProcedureClause |bindRecordClause)
+    : BIND (bindTaskClause | bindTransactionClause | bindRunUnitClause | bindMapClause | bindProcedureClause |bindRecordClause) checkTerminalMaxLengthClause?
     ;
 
 bindMapClause
@@ -369,7 +403,7 @@ enqueueNameClause
 // erase statement
 
 eraseStatement
-   : ERASE idms_db_entity_name ((PERMANENT | SELECTIVE | ALL) MEMBERS)?
+   : ERASE idms_db_entity_name ((PERMANENT | SELECTIVE | ALL) MEMBERS?)?
    ;
 
 // find statement
@@ -717,7 +751,7 @@ putRetentionClause
    ;
 
 putScratchClause
-   : SCRATCH putAreaIdClause? idmsDmlFromClause putRecordClause? putReturnClause
+   : SCRATCH putAreaIdClause? idmsDmlFromClause putRecordClause? putReturnClause?
    ;
 
 putAreaIdClause

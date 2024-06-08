@@ -29,7 +29,7 @@ import org.eclipse.lsp.cobol.common.message.MessageServiceProvider;
 @Slf4j
 // for test
 @NoArgsConstructor
-class CobolErrorStrategy extends DefaultErrorStrategy implements MessageServiceProvider {
+public class CobolErrorStrategy extends DefaultErrorStrategy implements MessageServiceProvider {
   private static final String REPORT_NO_VIABLE_ALTERNATIVE =
       "ErrorStrategy.reportNoViableAlternative";
   private static final String REPORT_MISSING_TOKEN = "ErrorStrategy.reportMissingToken";

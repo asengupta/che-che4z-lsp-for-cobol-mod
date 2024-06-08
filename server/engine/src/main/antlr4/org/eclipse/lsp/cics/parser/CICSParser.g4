@@ -12,7 +12,7 @@
  *   Broadcom, Inc. - initial API and implementation
  */
 parser grammar CICSParser;
-options {tokenVocab = CICSLexer; superClass = MessageServiceParser;}
+options {tokenVocab = CICSLexer; superClass = MessageServiceParser; contextSuperClass = org.eclipse.lsp.cobol.common.poc.AnnotatedParserRuleContext;}
 
 startRule: .*? ((cicsExecBlock | cicsDfhRespLiteral | cicsDfhValueLiteral) .*?) * EOF;
 compilerDirective: (.*? compilerXOpts)* .*? EOF;
@@ -396,7 +396,7 @@ cics_extract_tcpip: TCPIP (AUTHENTICATE cics_cvda | cics_extract_clientname | ci
                     cics_extract_serveraddr | SRVRIPFAMILY cics_cvda | SERVERADDRNU cics_data_area | SRVRADDR6NU
                     cics_data_area | SSLTYPE cics_cvda | TCPIPSERVICE cics_data_area | PORTNUMBER cics_data_area |
                     PORTNUMNU cics_data_area | PRIVACY cics_cvda | MAXDATALEN cics_cvda | cics_handle_response)+;
-                    
+
 cics_extract_clientname: CLIENTNAME cics_data_area CNAMELENGTH cics_data_area;
 cics_extract_servername: SERVERNAME cics_data_area SNAMELENGTH cics_data_area;
 cics_extract_clientaddr: CLIENTADDR cics_data_area CADDRLENGTH cics_data_area;
@@ -880,7 +880,7 @@ cics_web_rqueryparm: QUERYPARM cics_data_value (NAMELENGTH cics_data_value | VAL
 cics_web_readnext: READNEXT (cics_web_rnformfield | cics_web_rnhttpheader);
 cics_web_rnformfield: (FORMFIELD cics_data_area | QUERYPARM cics_data_area | NAMELENGTH cics_data_area |
                       VALUE cics_data_area | VALUELENGTH cics_data_area | cics_handle_response)+;
-cics_web_rnhttpheader: (HTTPHEADER cics_data_area | NAMELENGTH cics_data_area | SESSTOKEN cics_data_value| 
+cics_web_rnhttpheader: (HTTPHEADER cics_data_area | NAMELENGTH cics_data_area | SESSTOKEN cics_data_value|
                       VALUE cics_data_area | VALUELENGTH cics_data_area | cics_handle_response)+;
 cics_web_receive: RECEIVE (cics_web_rserver | cics_web_rtocontainer | cics_web_rsesstoken);
 cics_web_rserver: cics_into (LENGTH cics_data_area | MAXLENGTH cics_data_value | NOTRUNCATE | TYPE cics_cvda | SRVCONVERT |

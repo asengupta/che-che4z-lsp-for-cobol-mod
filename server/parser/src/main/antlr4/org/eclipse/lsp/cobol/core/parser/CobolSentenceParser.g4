@@ -6,7 +6,7 @@
 * of the MIT license. See the LICENSE file for details.
 */
 
-parser grammar CobolParser;
+parser grammar CobolSentenceParser;
 options {tokenVocab = CobolLexer; superClass = MessageServiceParser;}
 
 startRule : compilationUnit EOF;
@@ -16,7 +16,10 @@ compilationUnit
    ;
 
 programUnit
-   : identificationDivision environmentDivision? dataDivision? procedureDivision? programUnit* endProgramStatement?
+   : statement | endProgramStatement | programIdParagraph | authorParagraph | installationParagraph |
+        dateWrittenParagraph | dateCompiledParagraph | securityParagraph | remarksParagraph | configurationSectionParagraph |
+        fileControlParagraph | ioControlParagraph | fileDescriptionEntry | sentence | alteredGoTo | useStatement |
+        paragraphDefinitionName | dialectSection
    ;
 
 endProgramStatement
@@ -26,14 +29,6 @@ endProgramStatement
 commaSeparator: COMMACHAR | COMMASEPARATOR;
 
 // --- identification division --------------------------------------------------------------------
-
-identificationDivision
-   : (IDENTIFICATION | ID) DIVISION DOT_FS programIdParagraph identificationDivisionBody*
-   ;
-
-identificationDivisionBody
-   : authorParagraph | installationParagraph | dateWrittenParagraph | dateCompiledParagraph | securityParagraph | remarksParagraph
-   ;
 
 // - program id paragraph ----------------------------------
 
@@ -85,19 +80,7 @@ optionalParagraphTermination
 
 // --- environment division --------------------------------------------------------------------
 
-environmentDivision
-   : ENVIRONMENT DIVISION DOT_FS environmentDivisionBody*
-   ;
-
-environmentDivisionBody
-   : configurationSection | inputOutputSection | dialectSection
-   ;
-
 // -- configuration section ----------------------------------
-
-configurationSection
-   : CONFIGURATION SECTION DOT_FS configurationSectionParagraph*
-   ;
 
 // - configuration section paragraph ----------------------------------
 
@@ -263,15 +246,7 @@ symbolicCharacters
 
 // -- input output section ----------------------------------
 
-inputOutputSection
-   : INPUT_OUTPUT SECTION DOT_FS inputOutputSectionParagraph*
-   ;
-
 // - input output section paragraph ----------------------------------
-
-inputOutputSectionParagraph
-   : fileControlParagraph | ioControlParagraph
-   ;
 
 // - file control paragraph ----------------------------------
 
@@ -395,24 +370,11 @@ endClause
 
 // --- data division --------------------------------------------------------------------
 
-dataDivision
-   : DATA DIVISION DOT_FS dataDivisionSection*
-   ;
-
-dataDivisionSection
-   : fileSection | workingStorageSection | linkageSection | localStorageSection
-   | dialectSection
-   ;
-
 dialectSection
-   : dialectSectionBlock | dialectNodeFiller
+   : dialectNodeFiller
    ;
 
 // -- file section ----------------------------------
-
-fileSection
-   : FILE SECTION DOT_FS fileDescriptionEntry*
-   ;
 
 fileDescriptionEntry
    : (fileDescriptionEntryClauses dataDescriptionEntry* | dialectNodeFiller)
@@ -516,32 +478,7 @@ reportClause
 
 // -- working storage section ----------------------------------
 
-workingStorageSection
-   : WORKING_STORAGE SECTION DOT_FS  dataDescriptionEntryForWorkingStorageSection*
-   ;
 // -- linkage section ----------------------------------
-
-linkageSection
-   : LINKAGE SECTION DOT_FS dataDescriptionEntryForWorkingStorageAndLinkageSection*
-   ;
-
-// -- local storage section ----------------------------------
-
-localStorageSection
-   : LOCAL_STORAGE SECTION DOT_FS dataDescriptionEntryForLocalStorageSection*
-   ;
-
-dataDescriptionEntryForLocalStorageSection
-   : dataDescriptionEntry
-   ;
-
-dataDescriptionEntryForWorkingStorageSection
-   : dataDescriptionEntryForWorkingStorageAndLinkageSection
-   ;
-
-dataDescriptionEntryForWorkingStorageAndLinkageSection
-   : dataDescriptionEntry
-   ;
 
 dataDescriptionEntry
    : dataDescriptionEntryFormat1
@@ -733,53 +670,6 @@ thruToken
    : (THROUGH | THRU)
    ;
 
-// --- procedure division --------------------------------------------------------------------
-
-procedureDivision
-   : PROCEDURE DIVISION procedureDivisionUsingClause? procedureDivisionGivingClause? DOT_FS procedureDeclaratives? procedureDivisionBody
-   ;
-
-procedureDivisionUsingClause
-   : (USING | CHAINING) procedureDivisionUsingParameter (COMMACHAR? procedureDivisionUsingParameter)*
-   ;
-
-procedureDivisionGivingClause
-   : RETURNING dataName
-   ;
-
-procedureDivisionUsingParameter
-   : BY? (REFERENCE | VALUE)? generalIdentifier
-   ;
-
-procedureDeclaratives
-   : DECLARATIVES DOT_FS procedureDeclarative+ END DECLARATIVES DOT_FS
-   ;
-
-procedureDeclarative
-   : procedureSectionHeader DOT_FS (useStatement DOT_FS) paragraphs
-   ;
-
-procedureSectionHeader
-   : sectionName SECTION integerLiteral?
-   ;
-
-procedureDivisionBody
-   : paragraphs procedureSection*
-   ;
-
-// -- procedure section ----------------------------------
-
-procedureSection
-   : procedureSectionHeader DOT_FS paragraphs
-   ;
-
-paragraphs
-   : sentence* paragraph*
-   ;
-
-paragraph
-   : paragraphDefinitionName DOT_FS (alteredGoTo | sentence*)
-   ;
 
 sentence
    : statement * (endClause | dialectStatement)
@@ -1216,10 +1106,6 @@ goToStatement
 
 dialectIfStatment
    : DIALECT_IF dialectNodeFiller* ifThen ifElse? END_IF?
-   ;
-
-dialectSectionBlock
-   : DIALECT_SCHEMA_SECTION dialectNodeFiller*
    ;
 
 ifStatement
@@ -2016,11 +1902,7 @@ notOnExceptionClause
    ;
 
 genericOnClauseStatement
-    : ON generalIdentifier onClauseBlock END_IF?
-    ;
-
-onClauseBlock
-    : (statement | dialectNodeFiller)+
+    : ON generalIdentifier (statement | dialectNodeFiller)+ END_IF?
     ;
 
 // condition ----------------------------------
@@ -2059,12 +1941,8 @@ fixedComparison
    ;
 
 relationalOperator
-   : (IS | ARE)? (NOT? charBasedOperator
+   : (IS | ARE)? (NOT? (GREATER THAN? | MORETHANCHAR | LESS THAN? | LESSTHANCHAR | EQUAL TO? | EQUALCHAR)
    | NOTEQUALCHAR | GREATER THAN? OR EQUAL TO? | MORETHANOREQUAL | LESS THAN? OR EQUAL TO? | LESSTHANOREQUAL)
-   ;
-
-charBasedOperator
-   : (GREATER THAN? | MORETHANCHAR | LESS THAN? | LESSTHANCHAR | EQUAL TO? | EQUALCHAR)
    ;
 
 // identifier ----------------------------------

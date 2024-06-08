@@ -183,7 +183,8 @@ public class ServerCommunications implements Communications {
     Registration registrations =
             new Registration(id, "workspace/executeCommand", new ExecuteCommandOptions(capabilities));
     RegistrationParams params = new RegistrationParams(ImmutableList.of(registrations));
-    getClient().registerCapability(params);
+    // Disabled because we are not interested in using the LSP, and the default throws an exception
+//    getClient().registerCapability(params);
   }
 
   @Override

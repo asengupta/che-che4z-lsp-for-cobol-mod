@@ -37,6 +37,7 @@ import org.eclipse.lsp.cobol.common.model.tree.Node;
 import org.eclipse.lsp.cobol.common.processor.ProcessorDescription;
 import org.eclipse.lsp.cobol.core.engine.analysis.AnalysisContext;
 import org.eclipse.lsp.cobol.implicitDialects.cics.CICSDialect;
+import org.eclipse.lsp.cobol.implicitDialects.cics.CICSVisitorBuilder;
 import org.eclipse.lsp.cobol.implicitDialects.sql.Db2SqlDialect;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
@@ -169,7 +170,7 @@ public class DialectService {
    * @return list of active implicit dialects
    */
   public List<CobolDialect> getActiveImplicitDialects(AnalysisConfig config) {
-    return getImplicitCobolDialects().stream()
+    return getImplicitCobolDialects(config).stream()
         .filter(activeImplicitDialect(config))
         .collect(Collectors.toList());
   }
@@ -182,6 +183,13 @@ public class DialectService {
   private ImmutableList<CobolDialect> getImplicitCobolDialects() {
     return ImmutableList.of(
         new CICSDialect(copybookService, messageService),
+        new Db2SqlDialect(copybookService, messageService));
+  }
+
+  private ImmutableList<CobolDialect> getImplicitCobolDialects(AnalysisConfig config) {
+      CICSVisitorBuilder visitorBuilder = config.isAddCicsPlaceholder() ? CICSVisitorBuilder.SUBSTITUTING : CICSVisitorBuilder.ORIGINAL;
+      return ImmutableList.of(
+        new CICSDialect(copybookService, messageService, visitorBuilder),
         new Db2SqlDialect(copybookService, messageService));
   }
 

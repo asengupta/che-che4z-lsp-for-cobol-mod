@@ -18,11 +18,13 @@ import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
+import org.eclipse.lsp.cobol.common.poc.AnnotatedParserRuleContext;
 import org.eclipse.lsp.cobol.common.dialects.CobolDialect;
 import org.eclipse.lsp.cobol.common.dialects.DialectProcessingContext;
 import org.eclipse.lsp.cobol.common.error.SyntaxError;
 import org.eclipse.lsp.cobol.common.model.Locality;
 import org.eclipse.lsp.cobol.common.model.tree.Node;
+import org.eclipse.lsp.cobol.common.poc.PersistentData;
 import org.eclipse.lsp.cobol.dialects.idms.IdmsParser.*;
 import org.eclipse.lsp.cobol.common.model.tree.SectionNode;
 import org.eclipse.lsp.cobol.common.model.tree.variable.QualifiedReferenceNode;
@@ -46,7 +48,9 @@ import static org.eclipse.lsp.cobol.common.VariableConstants.LEVEL_MAP_NAME;
  */
 class IdmsVisitor extends IdmsParserBaseVisitor<List<Node>> {
   private static final String IF = "_IF_ ";
+  private static final String SCHEMA_SECTION = "_SCHEMA_ ";
   private final DialectProcessingContext context;
+  @Getter private int extractions = 0;
 
   @Getter private final List<SyntaxError> errors = new LinkedList<>();
 
@@ -56,26 +60,31 @@ class IdmsVisitor extends IdmsParserBaseVisitor<List<Node>> {
 
   @Override
   public List<Node> visitIdmsStatements(IdmsStatementsContext ctx) {
-    addReplacementContext(ctx);
-    return visitChildren(ctx);
+      replaceWithMetadata(ctx);
+      return visitChildren(ctx);
   }
 
-  @Override
+    @Override
+    public List<Node> visitIdmsStmtsOptTermOn(IdmsStmtsOptTermOnContext ctx) {
+        return super.visitIdmsStmtsOptTermOn(ctx);
+    }
+
+    @Override
   public List<Node> visitIdmsSections(IdmsSectionsContext ctx) {
-    addReplacementContext(ctx);
-    return visitChildren(ctx);
+      replaceWithMetadata(ctx);
+        return visitChildren(ctx);
   }
 
   @Override
   public List<Node> visitIdmsIfStatement(IdmsIfStatementContext ctx) {
-    addReplacementContext(ctx, IF);
-    return visitChildren(ctx);
+      replaceWithMetadata(ctx, IF + " ");
+      return visitChildren(ctx);
   }
 
   @Override
   public List<Node> visitIdmsIfCondition(IdmsIfConditionContext ctx) {
-    addReplacementContext(ctx);
-    return visitChildren(ctx);
+      replaceWithMetadata(ctx);
+      return visitChildren(ctx);
   }
 
   @Override
@@ -133,6 +142,7 @@ class IdmsVisitor extends IdmsParserBaseVisitor<List<Node>> {
 
   @Override
   public List<Node> visitSchemaSection(SchemaSectionContext ctx) {
+    replaceWithMetadata(ctx, SCHEMA_SECTION + " ");
     return addTreeNode(ctx, locality -> new SectionNode(locality, SectionType.SCHEMA));
   }
 
@@ -192,4 +202,16 @@ class IdmsVisitor extends IdmsParserBaseVisitor<List<Node>> {
                 .replaceAll("[^ \n]", CobolDialect.FILLER);
     context.getExtendedDocument().replace(DialectUtils.constructRange(ctx), newText);
   }
+
+    private void replaceWithMetadata(AnnotatedParserRuleContext ctx) {
+      replaceWithMetadata(ctx, "");
+    }
+    private void replaceWithMetadata(AnnotatedParserRuleContext ctx, String staticPrefix) {
+        String contextTextReference = PersistentData.next();
+        ctx.getCustomData().put("IDMS-" + contextTextReference, new Object());
+        ctx.getCustomData().put("DIALECT", "IDMS");
+        String terminator = ".".equals(ctx.stop.getText()) ? "." : "";
+        addReplacementContext(ctx, String.format("%s_DIALECT_ %s %s", staticPrefix, contextTextReference, terminator));
+        extractions++;
+    }
 }

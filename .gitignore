@@ -91,7 +91,7 @@ local.properties
 # CDT-specific (C/C++ Development Tooling)
 .cproject
 
-# CDT- autotools 
+# CDT- autotools
 .autotools
 
 # Java annotation processor (APT)
@@ -112,6 +112,8 @@ local.properties
 /server/dialect-daco/gen
 /server/test/gen
 /server/parser/gen
+/server/parser/src/main/antlr4/org/eclipse/lsp/cobol/core/parser/gen/
+/server/dialect-idms/src/main/antlr4/org/eclipse/lsp/cobol/core/parser/gen/
 
 # TeXlipse plugin
 .texlipse
