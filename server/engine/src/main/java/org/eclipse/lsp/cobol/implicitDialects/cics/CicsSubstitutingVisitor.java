@@ -88,12 +88,41 @@ class CicsSubstitutingVisitor extends ErrorHandlingCICSVisitor {
     boolean isReturn = (ctx.allCicsRule() != null && ctx.allCicsRule().size() > 0 && ctx.allCicsRule().get(0).cics_return() != null);
     boolean isHandle = (ctx.allCicsRule() != null && ctx.allCicsRule().size() > 0 && ctx.allCicsRule().get(0).cics_handle() != null);
 
-    if (isReturn) {
-      return addTreeNode(ctx, ExecCicsReturnNode::new);
-    } else if (isHandle) {
-      return addTreeNode(ctx, ExecCicsHandleNode::new);
-    }
-    return addTreeNode(ctx, ExecCicsNode::new);
+      if (isReturn) {
+          return addTreeNode(ctx, ExecCicsReturnNode::new);
+      } else if (isHandle) {
+          boolean isProgram = Optional.ofNullable(ctx.allCicsRule().get(0).cics_handle())
+                  .map(CICSParser.Cics_handleContext::cics_handle_abend)
+                  .map(CICSParser.Cics_handle_abendContext::PROGRAM)
+                  .filter(s -> s.size() > 0)
+                  .isPresent();
+
+          boolean isLabel = Optional.ofNullable(ctx.allCicsRule().get(0).cics_handle())
+                  .map(CICSParser.Cics_handleContext::cics_handle_abend)
+                  .map(CICSParser.Cics_handle_abendContext::LABEL)
+                  .filter(s -> s.size() > 0)
+                  .isPresent();
+
+          boolean isReset = Optional.ofNullable(ctx.allCicsRule().get(0).cics_handle())
+                  .map(CICSParser.Cics_handleContext::cics_handle_abend)
+                  .map(CICSParser.Cics_handle_abendContext::RESET)
+                  .filter(s -> s.size() > 0)
+                  .isPresent();
+
+          ExecCicsHandleNode.HandleAbendType type;
+          if (isProgram) {
+              type = ExecCicsHandleNode.HandleAbendType.PROGRAM;
+          } else if (isLabel) {
+              type = ExecCicsHandleNode.HandleAbendType.LABEL;
+          } else if (isReset) {
+              type = ExecCicsHandleNode.HandleAbendType.RESET;
+          } else {
+              type = ExecCicsHandleNode.HandleAbendType.CANCEL;
+          }
+
+          return addTreeNode(ctx, (location) -> new ExecCicsHandleNode(location, type));
+      }
+      return addTreeNode(ctx, ExecCicsNode::new);
   }
 
   @Override

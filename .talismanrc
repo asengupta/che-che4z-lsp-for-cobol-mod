@@ -1,0 +1,13 @@
+fileignoreconfig:
+- filename: server/engine/src/main/resources/LanguageKeywords_sql.txt
+  checksum: f9c686515cf2fb4fb14de9a61b20b6bfbb6f1cf9652416bb1129040522ee4fa1
+- filename: CHANGELOG.md
+  checksum: 1a648955442ba86fb2b801b4456e02e3595668789910e4b0f68d4ddb538ff849
+- filename: server/engine/src/test/java/org/eclipse/lsp/cobol/usecases/hpcobol/TestHPCobol.java
+  checksum: d4737759dffbf3fd3ca8ce3f895f1ec739db6a8e161980320a9a36a021610572
+- filename: clients/cobol-lsp-vscode-extension/package-lock.json
+  checksum: ae26dd8542196836a5cb47f0bb27e55723692cbca6cfe9d2b3d17199f8048483
+- filename: server/engine/src/test/java/org/eclipse/lsp/cobol/cli/CliTest.java
+  checksum: 97f6aba10244cabe04ef6e89f0d681f02cd35742f4ba9e91ca29cb494ccbf225
+- filename: server/parser/src/main/antlr4/org/eclipse/lsp/cobol/core/CobolLexer.g4
+  checksum: 7805fc1f54c511671c5ed63980683080d3edb9fd32bc8f1aabdf9eb01bb8387d

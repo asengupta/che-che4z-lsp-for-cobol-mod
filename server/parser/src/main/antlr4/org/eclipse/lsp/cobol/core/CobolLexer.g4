@@ -11,7 +11,7 @@
  * Contributors:
  *   Broadcom, Inc. - initial API and implementation
  */
-    
+
 lexer grammar CobolLexer;
 
 @header {
@@ -140,6 +140,7 @@ DELIMITER       : D E L I M I T E R {cobolVerbTokens.add(DELIMITER);};
 DEPENDING       : D E P E N D I N G {cobolVerbTokens.add(DEPENDING);};
 DESCENDING     : D E S C E N D I N G {cobolVerbTokens.add(DESCENDING);};
 DETAIL: D E T A I L;
+DIALECT_MARKER_LITERAL : D I A L E C T;
 DISABLE : D I S A B L E;
 DISK : D I S K;
 DISPLAY         : D I S P L A Y {cobolVerbTokens.add(DISPLAY);};
@@ -378,7 +379,8 @@ RIGHT                  : R I G H T {cobolVerbTokens.add(RIGHT);};
 ROUNDED                : R O U N D E D {cobolVerbTokens.add(ROUNDED);};
 RUN                    : R U N {cobolVerbTokens.add(RUN);};
 SAME                   : S A M E {cobolVerbTokens.add(SAME);};
-SAVE : S A V E;
+SAVE                   : S A V E {cobolVerbTokens.add(SAVE);};
+SCHEMA                 : S C H E M A {cobolVerbTokens.add(SCHEMA);};
 SD                     : S D {cobolVerbTokens.add(SD);};
 SEARCH                 : S E A R C H {cobolVerbTokens.add(SEARCH);};
 SECTION                : S E C T I O N {cobolVerbTokens.add(SECTION);};
@@ -515,6 +517,8 @@ SLASHCHAR : '/';
 // Special IF for dialect
 UNDERSCORECHAR : '_';
 DIALECT_IF: UNDERSCORECHAR I F UNDERSCORECHAR;
+DIALECT_SCHEMA_SECTION: UNDERSCORECHAR SCHEMA UNDERSCORECHAR;
+DIALECT_MARKER: UNDERSCORECHAR DIALECT_MARKER_LITERAL UNDERSCORECHAR;
 
 // Dialect filler
 ZERO_WIDTH_SPACE: '\u200B';
@@ -529,7 +533,6 @@ fragment NULLTERMINATED : Z '"' (~["\n\r] | '""' | '\'')* '"' | Z '\'' (~['\n\r]
 fragment STRINGLITERAL : '"' (~["\n\r] | '""' | '\'')* '"' | '\'' (~['\n\r] | '\'\'' | '"')* '\'';
 fragment UNTRMSTRINGLITERAL : '"' (~["\n\r] | '""' | '\'')* | '\'' (~['\n\r] | '\'\'' | '"')*;
 fragment DBCSLITERAL : [GN] '"' (~["\n\r] | '""' | '\'')* '"' | [GN] '\'' (~['\n\r] | '\'\'' | '"')* '\'';
-
 fragment OCT_DIGIT        : [0-8] ;
 fragment DIGIT: OCT_DIGIT | [9];
 

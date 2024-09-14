@@ -6,7 +6,7 @@
 * of the MIT license. See the LICENSE file for details.
 */
 
-parser grammar CobolParser;
+parser grammar CobolSentenceParser;
 options {tokenVocab = CobolLexer; superClass = MessageServiceParser;}
 
 startRule : compilationUnit EOF;
@@ -16,7 +16,10 @@ compilationUnit
    ;
 
 programUnit
-   : identificationDivision environmentDivision? dataDivision? procedureDivision? programUnit* endProgramStatement?
+   : statement | endProgramStatement | programIdParagraph | authorParagraph | installationParagraph |
+        dateWrittenParagraph | dateCompiledParagraph | securityParagraph | remarksParagraph | configurationSectionParagraph |
+        fileControlParagraph | ioControlParagraph | fileDescriptionEntry | sentence | alteredGoTo | useStatement |
+        paragraphDefinitionName | dialectSection
    ;
 
 endProgramStatement
@@ -26,14 +29,6 @@ endProgramStatement
 commaSeparator: COMMACHAR | COMMASEPARATOR;
 
 // --- identification division --------------------------------------------------------------------
-
-identificationDivision
-   : (IDENTIFICATION | ID) DIVISION dot_fs programIdParagraph identificationDivisionBody*
-   ;
-
-identificationDivisionBody
-   : authorParagraph | installationParagraph | dateWrittenParagraph | dateCompiledParagraph | securityParagraph | remarksParagraph
-   ;
 
 // - program id paragraph ----------------------------------
 
@@ -85,19 +80,7 @@ optionalParagraphTermination
 
 // --- environment division --------------------------------------------------------------------
 
-environmentDivision
-   : ENVIRONMENT DIVISION dot_fs environmentDivisionBody*
-   ;
-
-environmentDivisionBody
-   : configurationSection | inputOutputSection | dialectSection
-   ;
-
 // -- configuration section ----------------------------------
-
-configurationSection
-   : CONFIGURATION SECTION dot_fs configurationSectionParagraph*
-   ;
 
 // - configuration section paragraph ----------------------------------
 
@@ -127,13 +110,13 @@ intrinsicClause
 // - source computer paragraph ----------------------------------
 
 sourceComputerParagraph
-   : SOURCE_COMPUTER dot_fs (computerName (WITH? DEBUGGING MODE)? dot_fs)?
+   : SOURCE_COMPUTER DOT_FS (computerName (WITH? DEBUGGING MODE)? DOT_FS)?
    ;
 
 // - object computer paragraph ----------------------------------
 
 objectComputerParagraph
-   : OBJECT_COMPUTER dot_fs (computerName objectComputerClause* dot_fs)?
+   : OBJECT_COMPUTER DOT_FS (computerName objectComputerClause* DOT_FS)?
    ;
 
 objectComputerClause
@@ -165,12 +148,13 @@ segmentLimitClause
    ;
 
 characterSetClause
-   : CHARACTER SET dot_fs   ;
+   : CHARACTER SET DOT_FS
+   ;
 
 // - special names paragraph ----------------------------------
 
 specialNamesParagraph
-   : SPECIAL_NAMES dot_fs (specialNameClause+ dot_fs)?
+   : SPECIAL_NAMES DOT_FS (specialNameClause+ DOT_FS)?
    ;
 
 specialNameClause
@@ -262,24 +246,17 @@ symbolicCharacters
 
 // -- input output section ----------------------------------
 
-inputOutputSection
-   : INPUT_OUTPUT SECTION dot_fs inputOutputSectionParagraph*
-   ;
-
 // - input output section paragraph ----------------------------------
-
-inputOutputSectionParagraph
-   : fileControlParagraph | ioControlParagraph
-   ;
 
 // - file control paragraph ----------------------------------
 
 fileControlParagraph
-   : FILE_CONTROL dot_fs fileControlEntry*
+   : FILE_CONTROL DOT_FS fileControlEntry*
    ;
 
 fileControlEntry
-   : selectClause fileControlClauses dot_fs   ;
+   : selectClause fileControlClauses DOT_FS
+   ;
 
 fileControlClauses
    : fileControlClause*
@@ -344,7 +321,7 @@ relativeKeyClause
 // - io control paragraph ----------------------------------
 
 ioControlParagraph
-   : I_O_CONTROL dot_fs (fileName dot_fs)? (ioControlClause+ dot_fs)?
+   : I_O_CONTROL DOT_FS (fileName DOT_FS)? (ioControlClause+ DOT_FS)?
    ;
 
 ioControlClause
@@ -393,31 +370,18 @@ endClause
 
 // --- data division --------------------------------------------------------------------
 
-dataDivision
-   : DATA DIVISION dot_fs dataDivisionSection*
-   ;
-
-dataDivisionSection
-   : fileSection | workingStorageSection | linkageSection | localStorageSection
-   | dialectSection
-   ;
-
 dialectSection
-   : dialectSectionBlock | dialectNodeFiller
+   : dialectNodeFiller
    ;
 
 // -- file section ----------------------------------
-
-fileSection
-   : FILE SECTION dot_fs fileDescriptionEntry*
-   ;
 
 fileDescriptionEntry
    : (fileDescriptionEntryClauses dataDescriptionEntry* | dialectNodeFiller)
    ;
 
 fileDescriptionEntryClauses
-   : (FD | SD) cobolWord fileDescriptionEntryClause* dot_fs
+   : (FD | SD) cobolWord (DOT_FS? fileDescriptionEntryClause)* DOT_FS
    ;
 
 fileDescriptionEntryClause
@@ -514,32 +478,7 @@ reportClause
 
 // -- working storage section ----------------------------------
 
-workingStorageSection
-   : WORKING_STORAGE SECTION dot_fs dataDescriptionEntryForWorkingStorageSection*
-   ;
 // -- linkage section ----------------------------------
-
-linkageSection
-   : LINKAGE SECTION dot_fs dataDescriptionEntryForWorkingStorageAndLinkageSection*
-   ;
-
-// -- local storage section ----------------------------------
-
-localStorageSection
-   : LOCAL_STORAGE SECTION dot_fs dataDescriptionEntryForLocalStorageSection*
-   ;
-
-dataDescriptionEntryForLocalStorageSection
-   : dataDescriptionEntry
-   ;
-
-dataDescriptionEntryForWorkingStorageSection
-   : dataDescriptionEntryForWorkingStorageAndLinkageSection
-   ;
-
-dataDescriptionEntryForWorkingStorageAndLinkageSection
-   : dataDescriptionEntry
-   ;
 
 dataDescriptionEntry
    : dataDescriptionEntryFormat1
@@ -555,7 +494,8 @@ dataDescriptionEntryFormat1
    | dataOccursClause | dataSignClause | dataSynchronizedClause
    | dataJustifiedClause | dataBlankWhenZeroClause | dataDynamicLengthClause | dataVolatileClause)*
    (GENERIC_COMMENTS NONNUMERICLITERAL)?
-   dot_fs   ;
+   DOT_FS
+   ;
 
 levelNumber
    : LEVEL_NUMBER
@@ -563,18 +503,20 @@ levelNumber
 
 
 dataDescriptionEntryFormat2
-   : LEVEL_NUMBER_66 entryName? dataRenamesClause dot_fs   ;
+   : LEVEL_NUMBER_66 entryName? dataRenamesClause DOT_FS
+   ;
 
 dataDescriptionEntryFormat1Level77
    : LEVEL_NUMBER_77 entryName? (dataGroupUsageClause | dataRedefinesClause | dataExternalClause
      | dataGlobalClause | dataPictureClause | dataUsageClause | dataValueClause
      | dataOccursClause | dataSignClause | dataSynchronizedClause
      | dataJustifiedClause | dataBlankWhenZeroClause | dataDynamicLengthClause | dataVolatileClause)*
-     dot_fs   ;
+     DOT_FS
+   ;
 
 
 dataDescriptionEntryFormat3
-   : LEVEL_NUMBER_88 entryName? level88DataUsageClause? dataValueClause+ dot_fs
+   : LEVEL_NUMBER_88 entryName? level88DataUsageClause? dataValueClause+ DOT_FS
    ;
 
 dialectDescriptionEntry
@@ -582,9 +524,7 @@ dialectDescriptionEntry
    ;
 
 entryName
-   : (FILLER | { validateLength(_input.LT(1).getText(), "Variable name", 30);
-         validateAllowedVariableName(_input.LT(1).getText(), "INSERT",
-         "BIT", "CONDITION", "COPY", "CURSOR");} dataName)
+   : (FILLER | { validateLength(_input.LT(1).getText(), "Variable name", 30);} dataName)
    ;
 
 dataGroupUsageClause
@@ -730,56 +670,9 @@ thruToken
    : (THROUGH | THRU)
    ;
 
-// --- procedure division --------------------------------------------------------------------
-
-procedureDivision
-   : PROCEDURE DIVISION procedureDivisionUsingClause? procedureDivisionGivingClause? dot_fs procedureDeclaratives? procedureDivisionBody
-   ;
-
-procedureDivisionUsingClause
-   : (USING | CHAINING) procedureDivisionUsingParameter (COMMACHAR? procedureDivisionUsingParameter)*
-   ;
-
-procedureDivisionGivingClause
-   : RETURNING dataName
-   ;
-
-procedureDivisionUsingParameter
-   : BY? (REFERENCE | VALUE)? generalIdentifier
-   ;
-
-procedureDeclaratives
-   : DECLARATIVES dot_fs procedureDeclarative+ END DECLARATIVES dot_fs   ;
-
-procedureDeclarative
-   : procedureSectionHeader dot_fs (useStatement dot_fs) paragraphs
-   ;
-
-procedureSectionHeader
-   : sectionName SECTION integerLiteral?
-   ;
-
-procedureDivisionBody
-   : paragraphs procedureSection*
-   ;
-
-// -- procedure section ----------------------------------
-
-procedureSection
-   : procedureSectionHeader dot_fs paragraphs
-   ;
 
 sentence
    : statement * (endClause | dialectStatement)
-   | dialectStatement
-   ;
-
-paragraph
-   : paragraphDefinitionName dot_fs (alteredGoTo | sentence*)
-   ;
-
-paragraphs
-   : (sentence | paragraph)*
    ;
 
 conditionalStatementCall
@@ -793,35 +686,8 @@ statement
     initiateStatement | inspectStatement | mergeStatement | moveStatement | multiplyStatement | openStatement | performStatement | purgeStatement |
     readStatement | readyResetTraceStatement | receiveStatement | releaseStatement | returnStatement | rewriteStatement | searchStatement | sendStatement |
     serviceReloadStatement | serviceLabelStatement | setStatement | sortStatement | startStatement | stopStatement | stringStatement | subtractStatement |
-    terminateStatement | unstringStatement | writeStatement | xmlParseStatement | jsonStatement | mapStatement | nextSentence | genericOnClauseStatement | xmlGenerate
+    terminateStatement | unstringStatement | writeStatement | xmlParseStatement | jsonStatement | mapStatement | nextSentence | genericOnClauseStatement
    ;
-
-xmlGenerate
-    : XML GENERATE xmlGenIdentifier1 FROM xmlGenIdentifier2
-    (COUNT IN? xmlGenIdentifier3)?
-    (WITH? ENCODING integerLiteral)? (WITH? XML_DECLARATION)? (WITH? ATTRIBUTES)?
-    (NAMESPACE IS? (xmlGenIdentifier4 | literal))? (NAMESPACE_PREFIX IS? (xmlGenIdentifier5 | literal))?
-    (NAME OF? (xmlGenIdentifier6 IS? literal)+)?
-    (TYPE OF? (xmlGenIdentifier7 IS? (ATTRIBUTE | ELEMENT | CONTENT))+)?
-    (SUPPRESS ((xmlGenIdentifier8 when_phrase?) | generic_suppression_phrase)+)?
-    onExceptionClause? notOnExceptionClause? END_XML?
-    ;
-
-xmlGenIdentifier1: qualifiedDataName;
-
-xmlGenIdentifier2: qualifiedDataName;
-
-xmlGenIdentifier3: qualifiedDataName;
-
-xmlGenIdentifier4: qualifiedDataName;
-
-xmlGenIdentifier5: qualifiedDataName;
-
-xmlGenIdentifier6: qualifiedDataName;
-
-xmlGenIdentifier7: qualifiedDataName;
-
-xmlGenIdentifier8: qualifiedDataName;
 
 jsonStatement
     : jsonParse | jsonGenerate
@@ -874,9 +740,7 @@ jsonGenIdentifier6: qualifiedDataName;
 
 when_phrase: WHEN  json_phrases (OR? (json_phrases))*;
 
-generic_suppression_phrase: (EVERY ((NUMERIC generic_suppression_arguments?) | (NONNUMERIC generic_suppression_arguments?) |  generic_suppression_arguments))? when_phrase;
-
-generic_suppression_arguments : ATTRIBUTE | CONTENT | ELEMENT;
+generic_suppression_phrase: (EVERY (NUMERIC | NONNUMERIC))? when_phrase;
 
 json_phrases: ZERO | ZEROES | ZEROS | SPACE | SPACES | LOW_VALUE | LOW_VALUES | HIGH_VALUE | HIGH_VALUES;
 
@@ -1242,10 +1106,6 @@ goToStatement
 
 dialectIfStatment
    : DIALECT_IF dialectNodeFiller* ifThen ifElse? END_IF?
-   ;
-
-dialectSectionBlock
-   : DIALECT_SCHEMA_SECTION dialectNodeFiller*
    ;
 
 ifStatement
@@ -2042,11 +1902,7 @@ notOnExceptionClause
    ;
 
 genericOnClauseStatement
-    : ON generalIdentifier onClauseBlock END_IF?
-    ;
-
-onClauseBlock
-    : (statement | dialectNodeFiller)+
+    : ON generalIdentifier (statement | dialectNodeFiller)+ END_IF?
     ;
 
 // condition ----------------------------------
@@ -2085,12 +1941,8 @@ fixedComparison
    ;
 
 relationalOperator
-   : (IS | ARE)? (NOT? charBasedOperator
+   : (IS | ARE)? (NOT? (GREATER THAN? | MORETHANCHAR | LESS THAN? | LESSTHANCHAR | EQUAL TO? | EQUALCHAR)
    | NOTEQUALCHAR | GREATER THAN? OR EQUAL TO? | MORETHANOREQUAL | LESS THAN? OR EQUAL TO? | LESSTHANOREQUAL)
-   ;
-
-charBasedOperator
-   : (GREATER THAN? | MORETHANCHAR | LESS THAN? | LESSTHANCHAR | EQUAL TO? | EQUALCHAR)
    ;
 
 // identifier ----------------------------------
@@ -2258,7 +2110,7 @@ literal
    ;
 
 dialectGuid: integerLiteral;
-dialectLiteral: dialectNodeFiller+ DOT_FS?;
+dialectLiteral: dialectNodeFiller+;
 
 utfLiteral: U_CHAR NONNUMERICLITERAL;
 
@@ -2300,21 +2152,21 @@ power
    ;
 
 basis
-   : (dialectNodeFiller DOT_FS?) | generalIdentifier | literal | LPARENCHAR arithmeticExpression RPARENCHAR
+   : dialectNodeFiller | generalIdentifier | literal | LPARENCHAR arithmeticExpression RPARENCHAR
    ;
 
 cobolWord
-   : IDENTIFIER | SYMBOL | INTEGER | ELEMENT | CHANNEL | PROCESS | REMOVE | WAIT | NAMESPACE_PREFIX | NAMESPACE
-   | ATTRIBUTES | ATTRIBUTE | ANY | LIST | NAME | THREAD | U_CHAR | TYPE
-   | allowedCobolKeywords
+   : IDENTIFIER | SYMBOL | INTEGER | CHANNEL | PROCESS | REMOVE | WAIT | ANY | LIST | NAME | THREAD | U_CHAR
+   | cobolKeywords
    ;
 
-allowedCobolKeywords
-   : CR | FIELD | MMDDYYYY | PRINTER | DAY_OF_WEEK
-   | REMARKS | RESUME | TIMER | TODAYS_DATE | TODAYS_NAME | YEAR | YYYYDDD | YYYYMMDD | WHEN_COMPILED
+cobolKeywords
+   : ADDRESS | BOTTOM | COUNT | CR | FIELD | FIRST | MMDDYYYY | PRINTER | DAY | TIME | DATE | DAY_OF_WEEK
+   | REMARKS | RESUME | TIMER | TODAYS_DATE | TODAYS_NAME | TOP | YEAR | YYYYDDD | YYYYMMDD | WHEN_COMPILED
    | DISK | KEYBOARD | PORT | READER | REMOTE | VIRTUAL | LIBRARY | DEFINITION | PARSE | BOOL | ESCAPE | INITIALIZED
-   | LOC | BYTITLE | BYFUNCTION | ABORT | ORDERLY | ASSOCIATED_DATA | ASSOCIATED_DATA_LENGTH
-   | VOLATILE
+   | LOC | BYTITLE | BYFUNCTION | ABORT | ORDERLY | ASSOCIATED_DATA | ASSOCIATED_DATA_LENGTH | CLOSE | CURRENCY
+   | DATA | DBCS | EXIT | EXTEND | INITIAL | NATIONAL | OBJECT | OFF | QUOTE | SEPARATE | SEQUENCE
+   | SERVICE | STANDARD | SUPPRESS | TERMINAL | TEST | VOLATILE
    ;
 
 dialectNodeFiller
@@ -2324,11 +2176,7 @@ dialectNodeFiller
 whatever: eater;
 // NEWLINE should probably be removed
 eater
-    : ZERO_WIDTH_SPACE+ DOT_FS? EOF?
-    ;
-
-dot_fs
-    : DOT_FS | {notifyError("missing.period", _input.LT(1).getText());}
+    : (ZERO_WIDTH_SPACE)+
     ;
 
 //dialectNodeFiller
