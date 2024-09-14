@@ -21,14 +21,13 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>common</artifactId>
     <groupId>org.eclipse.lsp.cobol</groupId>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
 
     <properties>
-        <antlr.version>4.7.1</antlr.version>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <lombok.version>1.18.30</lombok.version>
-        <google.guava.version>32.0.1-jre</google.guava.version>
+        <google.guava.version>33.2.1-jre</google.guava.version>
         <logback.classic.version>1.5.7</logback.classic.version>
         <lsp4j.version>0.14.0</lsp4j.version>
         <commons.lang.version>3.12.0</commons.lang.version>
@@ -36,8 +35,6 @@
         <junit.platform.version>1.6.0</junit.platform.version>
         <mockito.core.version>5.10.0</mockito.core.version>
         <maven.surefire.plugin.version>3.0.0-M3</maven.surefire.plugin.version>
-        <maven.cobertura.plugin.version>2.7</maven.cobertura.plugin.version>
-        <maven.coveralls.plugin.version>4.3.0</maven.coveralls.plugin.version>
         <maven.jacoco.plugin.version>0.8.11</maven.jacoco.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -128,17 +125,6 @@
     </profiles>
 
     <dependencies>
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4</artifactId>
-            <version>${antlr.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4-runtime</artifactId>
-            <version>${antlr.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -241,28 +227,6 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <version>${maven.cobertura.plugin.version}</version>
-                <configuration>
-                    <format>xml</format>
-                    <maxmem>256m</maxmem>
-                    <aggregate>true</aggregate>
-                    <instrumentation>
-                        <includes>
-                            <include>org/eclipse/lsp/**/*.class</include>
-                        </includes>
-                    </instrumentation>
-                    <check/>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.eluder.coveralls</groupId>
-                <artifactId>coveralls-maven-plugin</artifactId>
-                <version>${maven.coveralls.plugin.version}</version>
-            </plugin>
-
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>

@@ -18,7 +18,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -37,7 +40,6 @@ import org.eclipse.lsp.cobol.lsp.analysis.AnalysisState;
 import org.eclipse.lsp.cobol.lsp.analysis.AnalysisStateListener;
 import org.eclipse.lsp.cobol.lsp.analysis.AsyncAnalysisService;
 import org.eclipse.lsp.cobol.service.CobolDocumentModel;
-import org.eclipse.lsp.cobol.service.UriDecodeService;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 
@@ -46,7 +48,6 @@ import org.eclipse.lsp4j.Position;
 @Slf4j
 public class SourceUnitGraph implements AnalysisStateListener {
   private final WorkspaceFileService fileService;
-  private final UriDecodeService uriDecodeService;
 
   // doc-a-uri --> copy-a Node. copy-b node, copy-c node
   // doc-1-uri --> copy-a Node. copy-2 node, copy-3 node
@@ -63,10 +64,8 @@ public class SourceUnitGraph implements AnalysisStateListener {
   @Inject
   public SourceUnitGraph(
       WorkspaceFileService fileService,
-      AsyncAnalysisService asyncAnalysisService,
-      UriDecodeService uriDecodeService) {
+      AsyncAnalysisService asyncAnalysisService) {
     this.fileService = fileService;
-    this.uriDecodeService = uriDecodeService;
     asyncAnalysisService.register(ImmutableList.of(this));
   }
 
@@ -99,7 +98,7 @@ public class SourceUnitGraph implements AnalysisStateListener {
       CobolDocumentModel model, EventSource eventSource) {
     updateGraphNodes(model, eventSource);
     invalidateGraphLinks(model.getUri());
-    if (isCopybook(model.getUri()) || model.getAnalysisResult() == null) {
+    if (isUserSuppliedCopybook(model.getUri()) || model.getAnalysisResult() == null) {
       return;
     }
     updateGraphLink(model, eventSource);
@@ -128,9 +127,9 @@ public class SourceUnitGraph implements AnalysisStateListener {
             });
         objectRef.putIfAbsent(copyNode.getUri(), copyNodeV);
         references.add(copyNodeV);
-
-        documentGraphIndexedByCopybook.putIfAbsent(copyNode.getUri(), new ArrayList<>());
-        List<String> strings = documentGraphIndexedByCopybook.get(copyNode.getUri());
+        String decodedUri = copyNode.getUri();
+        documentGraphIndexedByCopybook.putIfAbsent(decodedUri, new ArrayList<>());
+        List<String> strings = documentGraphIndexedByCopybook.get(decodedUri);
         if (!strings.contains(parentUri)) {
           strings.add(parentUri);
         }
@@ -175,8 +174,19 @@ public class SourceUnitGraph implements AnalysisStateListener {
    * @param uri document uri
    * @return true if copybook, false otherwise.
    */
-  public boolean isCopybook(String uri) {
-    return documentGraphIndexedByCopybook.containsKey(uri);
+  public boolean isUserSuppliedCopybook(String uri) {
+    return documentGraphIndexedByCopybook.keySet().stream()
+        .anyMatch(
+            copyUri -> {
+              try {
+                String decodeUri = uri.replace(" ", "%20");
+                copyUri = copyUri.replace(" ", "%20");
+                return new URL(decodeUri).sameFile(new URL(copyUri));
+              } catch (IOException e) {
+                LOG.error("IOException encountered while comparing paths {} and {}", copyUri, uri);
+                return false;
+              }
+            });
   }
 
   private void updateGraphNodes(CobolDocumentModel model, EventSource eventSource) {
@@ -395,11 +405,24 @@ public class SourceUnitGraph implements AnalysisStateListener {
    */
   public List<String> getCopybookUriInsideFolder(String parentFolder) {
     List<String> result = new ArrayList<>();
-    Path parentPath = Paths.get(URI.create(parentFolder));
+    Path parentPath;
+
+    try {
+      parentPath = Paths.get(URI.create(parentFolder));
+    } catch (FileSystemNotFoundException | SecurityException e) {
+      return result;
+    }
+
     Set<String> allCopybooks = documentGraphIndexedByCopybook.keySet();
     for (String copybookUri : allCopybooks) {
-      Path copybookPath = Paths.get(URI.create(copybookUri));
-      if (copybookPath.startsWith(parentPath)) result.add(copybookUri);
+      try {
+        Path copybookPath = Paths.get(URI.create(copybookUri));
+        if (copybookPath.startsWith(parentPath)) {
+          result.add(copybookUri);
+        }
+      } catch (Exception e) {
+        LOG.error("{} not found", copybookUri);
+      }
     }
     return result;
   }

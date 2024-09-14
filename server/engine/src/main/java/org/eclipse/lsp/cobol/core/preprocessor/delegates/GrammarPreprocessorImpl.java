@@ -15,12 +15,15 @@
 package org.eclipse.lsp.cobol.core.preprocessor.delegates;
 
 import com.google.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.NonNull;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.eclipse.lsp.cobol.common.CleanerPreprocessor;
 import org.eclipse.lsp.cobol.common.ResultWithErrors;
 import org.eclipse.lsp.cobol.common.error.SyntaxError;
 import org.eclipse.lsp.cobol.common.mapping.ExtendedDocument;
@@ -32,9 +35,6 @@ import org.eclipse.lsp.cobol.core.preprocessor.delegates.copybooks.*;
 import org.eclipse.lsp.cobol.core.preprocessor.delegates.replacement.ReplacePreProcessorListener;
 import org.eclipse.lsp.cobol.core.preprocessor.delegates.replacement.ReplacePreprocessorFactory;
 import org.eclipse.lsp.cobol.core.semantics.CopybooksRepository;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class runs pre-processing for COBOL using CobolPreprocessor.g4 grammar file. As a result, it
@@ -55,12 +55,12 @@ public class GrammarPreprocessorImpl implements GrammarPreprocessor {
 
   @NonNull
   @Override
-  public ResultWithErrors<CopybooksRepository> preprocess(@NonNull PreprocessorContext context) {
+  public ResultWithErrors<CopybooksRepository> preprocess(@NonNull PreprocessorContext context, @NonNull CleanerPreprocessor preprocessor) {
     List<SyntaxError> errors = new ArrayList<>();
 
     String replacedCode = replace(context.getCurrentDocument(), context.getHierarchy()).unwrap(errors::addAll);
 
-    return preprocess(context, replacedCode).accumulateErrors(errors);
+    return preprocess(context, preprocessor, replacedCode).accumulateErrors(errors);
   }
 
   private ResultWithErrors<String> replace(ExtendedDocument extendedDocument, CopybookHierarchy hierarchy) {
@@ -76,12 +76,14 @@ public class GrammarPreprocessorImpl implements GrammarPreprocessor {
 
   private ResultWithErrors<CopybooksRepository> preprocess(
           PreprocessorContext context,
+          CleanerPreprocessor preprocessor,
           String code) {
     ThreadInterruptionUtil.checkThreadInterrupted();
     BufferedTokenStream tokens = makeTokens(code);
 
-    GrammarPreprocessorListener<CopybooksRepository> listener = listenerFactory.create(context);
+    GrammarPreprocessorListener<CopybooksRepository> listener = listenerFactory.create(context, preprocessor);
 
+    ThreadInterruptionUtil.checkThreadInterrupted();
     CobolPreprocessor parser = new CobolPreprocessor(tokens);
     parser.removeErrorListeners();
 

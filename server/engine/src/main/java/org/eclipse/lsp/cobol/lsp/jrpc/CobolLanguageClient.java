@@ -16,6 +16,8 @@ package org.eclipse.lsp.cobol.lsp.jrpc;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
+import org.eclipse.lsp.cobol.common.copybook.CopyBookDTO;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
 
@@ -56,17 +58,15 @@ public interface CobolLanguageClient extends LanguageClient {
    * The copybook/download request is sent from the server to the client to
    * download remote copybook
    *
-   * @param cobolFilename the name of cobol program
-   * @param copybookNames list of copybooks to download
-   * @param dialectType the name of copybook dialect
+   * @param cobolFileUri Uri of the cobol program
+   * @param copybooks list of copybooks to download
    * @param quietMode the name of copybook dialect
    * @return corresponding local file absolute path
    */
   @JsonRequest("copybook/download")
   default CompletableFuture<Void> downloadCopybooks(
-      String cobolFilename,
-      List<String> copybookNames,
-      String dialectType,
+      String cobolFileUri,
+      List<CopyBookDTO> copybooks,
       boolean quietMode) {
     throw new UnsupportedOperationException();
   }

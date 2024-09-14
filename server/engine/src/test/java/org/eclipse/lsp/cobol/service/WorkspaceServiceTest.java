@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonPrimitive;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,6 @@ import org.eclipse.lsp.cobol.lsp.handlers.text.CodeActionHandler;
 import org.eclipse.lsp.cobol.lsp.handlers.workspace.DidChangeConfigurationHandler;
 import org.eclipse.lsp.cobol.lsp.handlers.workspace.ExecuteCommandHandler;
 import org.eclipse.lsp.cobol.service.copybooks.CopybookNameService;
-import org.eclipse.lsp.cobol.service.settings.layout.CobolProgramLayout;
 import org.eclipse.lsp.cobol.service.settings.layout.CodeLayoutStore;
 import org.eclipse.lsp.cobol.test.engine.UseCaseUtils;
 import org.eclipse.lsp4j.*;
@@ -55,7 +55,6 @@ import org.junit.jupiter.api.Test;
 class WorkspaceServiceTest {
   /** Test of the workspace/executeCommand entry point. */
   private DisposableLSPStateService stateService;
-  private UriDecodeService uriDecodeService = mock(UriDecodeService.class);
 
   @BeforeEach
   void initialize() {
@@ -80,7 +79,7 @@ class WorkspaceServiceTest {
             null,
             null,
             messageService,
-            asyncAnalysisService, getMockLayoutStore());
+            asyncAnalysisService, getMockLayoutStore(), copybookService);
     ExecuteCommandHandler executeCommandHandler = new ExecuteCommandHandler(stateService, asyncAnalysisService);
 
     LspMessageBroker lspMessageBroker = new LspMessageBroker();
@@ -89,8 +88,7 @@ class WorkspaceServiceTest {
             executeCommandHandler,
             documentGraph,
             didChangeConfigurationHandler,
-            asyncAnalysisService,
-            uriDecodeService);
+            asyncAnalysisService);
     ((LspEventConsumer) service).startConsumer();
     CompletableFuture<Object> result =
         service.executeCommand(
@@ -116,6 +114,7 @@ class WorkspaceServiceTest {
   void testExecuteNonExistingCommand() throws InterruptedException {
     CopybookNameService copybookNameService = mock(CopybookNameService.class);
     AsyncAnalysisService asyncAnalysisService = mock(AsyncAnalysisService.class);
+    CopybookService copybookService = mock(CopybookService.class);
 
     DidChangeConfigurationHandler didChangeConfigurationHandler = new DidChangeConfigurationHandler(stateService,
             null,
@@ -124,7 +123,7 @@ class WorkspaceServiceTest {
             null,
             null,
             null,
-            asyncAnalysisService, getMockLayoutStore());
+            asyncAnalysisService, getMockLayoutStore(), copybookService);
     ExecuteCommandHandler executeCommandHandler = new ExecuteCommandHandler(stateService, asyncAnalysisService);
 
     LspMessageBroker lspMessageBroker = new LspMessageBroker();
@@ -134,7 +133,7 @@ class WorkspaceServiceTest {
             executeCommandHandler,
             documentGraph,
             didChangeConfigurationHandler,
-            asyncAnalysisService, uriDecodeService);
+            asyncAnalysisService);
     ((LspEventConsumer) service).startConsumer();
 
     CompletableFuture<Object> result =
@@ -174,8 +173,9 @@ class WorkspaceServiceTest {
             executeCommandHandler,
             documentGraph,
             didChangeConfigurationHandler,
-            asyncAnalysisService, uriDecodeService);
+            asyncAnalysisService);
     ((LspEventConsumer) workspaceService).startConsumer();
+    doNothing().when(didChangeConfigurationHandler).didChangeConfiguration(any(DidChangeConfigurationParams.class));
     DidChangeConfigurationParams didChangeConfigurationParams = new DidChangeConfigurationParams(new Object());
     workspaceService.didChangeConfiguration(didChangeConfigurationParams);
     waitingQuery(lspMessageBroker).join();
@@ -226,7 +226,7 @@ class WorkspaceServiceTest {
 
     DidChangeConfigurationHandler didChangeConfigurationHandler =
         new DidChangeConfigurationHandler(
-            stateService, null, copybookNameService, null, null, null, null, asyncAnalysisService, getMockLayoutStore());
+            stateService, null, copybookNameService, null, null, null, null, asyncAnalysisService, getMockLayoutStore(), copybookService);
 
     ExecuteCommandHandler executeCommandHandler =
         new ExecuteCommandHandler(stateService, asyncAnalysisService);
@@ -239,7 +239,7 @@ class WorkspaceServiceTest {
             executeCommandHandler,
             documentGraph,
             didChangeConfigurationHandler,
-            asyncAnalysisService, uriDecodeService);
+            asyncAnalysisService);
 
     ((LspEventConsumer) service).startConsumer();
     DidChangeWatchedFilesParams params = new DidChangeWatchedFilesParams(singletonList(event));
@@ -252,7 +252,7 @@ class WorkspaceServiceTest {
 
   private CodeLayoutStore getMockLayoutStore() {
     CodeLayoutStore layoutStore = mock(CodeLayoutStore.class);
-    when(layoutStore.getCodeLayout()).thenReturn(new CobolProgramLayout());
+    when(layoutStore.getCodeLayout()).thenReturn(Optional.empty());
     return layoutStore;
   }
 }

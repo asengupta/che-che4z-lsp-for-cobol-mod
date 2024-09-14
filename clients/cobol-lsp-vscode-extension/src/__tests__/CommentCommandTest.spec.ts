@@ -70,6 +70,11 @@ describe("Validate getLineCommentStatus", () => {
       LineCommentStatus.COMMENTED_TWICE,
     );
   });
+  test("with twice commented line by floating", () => {
+    expect(getLineCommentStatus("123456* *> The comment")).toBe(
+      LineCommentStatus.COMMENTED_TWICE,
+    );
+  });
   test("with non comment line", () => {
     expect(getLineCommentStatus('123456     Display "Hello!"')).toBe(
       LineCommentStatus.NON_COMMENT,
@@ -85,6 +90,16 @@ describe("Validate getLineCommentStatus", () => {
   });
   test("with spaces line", () => {
     expect(getLineCommentStatus("                           ")).toBe(
+      LineCommentStatus.NON_COMMENT,
+    );
+  });
+  test("floating comment", () => {
+    expect(getLineCommentStatus("123456    *>               ")).toBe(
+      LineCommentStatus.FLOATING_COMMENT,
+    );
+  });
+  test("not a floating comment", () => {
+    expect(getLineCommentStatus("123456 A  *>               ")).toBe(
       LineCommentStatus.NON_COMMENT,
     );
   });
@@ -111,6 +126,9 @@ describe("Validate commentLine", () => {
   test("with empty line", () => {
     expect(commentLine("")).toBe("      *");
   });
+  test("with floating comment", () => {
+    expect(commentLine("123456  *>Foobar!")).toBe("123456*  *>Foobar!");
+  });
 });
 
 describe("Validate uncommentLine", () => {
@@ -133,6 +151,10 @@ describe("Validate uncommentLine", () => {
   });
   test("with empty line", () => {
     expect(uncommentLine("")).toBe("");
+  });
+  test("with floating comment", () => {
+    expect(uncommentLine("123456  *>Foobar!")).toBe("123456  Foobar!");
+    expect(uncommentLine("123456  *> Foobar!")).toBe("123456  Foobar!");
   });
 });
 
@@ -289,6 +311,42 @@ describe("Validate ToggleComments", () => {
     expect(editBuilder.replace).toBeCalledWith(
       getRange(25, 0, 25, 22),
       "      d  debug command",
+    );
+  });
+
+  test("toggle mixed selection", () => {
+    // selection[0]
+    // 4           >
+    // 5:       01  WS-POINT.
+    // 6:           05 WS-POINTER USAGE    IS POINTER.
+    // 7:                              <
+    // selection[1]
+    // 13:                  >
+    // 14:      *    DISPLAY 'From P1:' BAR of FOOBAR.
+    // 15:                             <
+    const mixedTextEditor = {
+      selections: [getRange(4, 12, 7, 25), getRange(13, 20, 15, 30)],
+      document: {
+        lineAt: jest.fn().mockImplementation(
+          (line: number) =>
+            documentLines[line as keyof typeof documentLines] ?? {
+              text: "",
+              range: getRange(line, 0, line, 0),
+            },
+        ),
+        eol: vscode.EndOfLine.LF,
+      },
+      edit: jest.fn().mockImplementation((callback) => callback(editBuilder)),
+    } as unknown as vscode.TextEditor;
+    new ToggleComments(mixedTextEditor, CommentAction.TOGGLE).doIt();
+    expect(editBuilder.replace).toBeCalledWith(
+      getRange(5, 0, 6, 45),
+      "      *01  WS-POINT.\n" +
+        "      *    05 WS-POINTER USAGE    IS POINTER.",
+    );
+    expect(editBuilder.replace).toBeCalledWith(
+      getRange(14, 0, 14, 44),
+      "           DISPLAY 'From P1:' BAR of FOOBAR.",
     );
   });
 

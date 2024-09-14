@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.eclipse.lsp.cobol.lsp.SourceUnitGraph;
 import org.eclipse.lsp.cobol.service.CobolDocumentModel;
-import org.eclipse.lsp.cobol.service.UriDecodeService;
 import org.eclipse.lsp.cobol.test.engine.UseCaseEngine;
 import org.eclipse.lsp4j.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,25 +31,24 @@ import org.junit.jupiter.api.Test;
 
 /** Test {@link VariableHover} */
 class VariableHoverTest {
-    private final UriDecodeService uriDecodeService = mock(UriDecodeService.class);
-    private final VariableHover variableHover = new VariableHover(uriDecodeService);
+    private final VariableHover variableHover = new VariableHover();
     SourceUnitGraph documentGraph;
 
   @BeforeEach
   void setUp() {
     this.documentGraph = mock(SourceUnitGraph.class);
-    when(documentGraph.isCopybook(anyString())).thenReturn(false);
+    when(documentGraph.isUserSuppliedCopybook(anyString())).thenReturn(false);
     }
 
   private static final String HEADER =
       "       Identification Division.\n"
-          + "       Program-id. TEST.\n"
+          + "       Program-id. TEST1.\n"
           + "       Data Division.\n"
           + "       Working-Storage Section.\n";
 
   private static final String FULL_TEXT = HEADER
-      + "       01 {$*TEST} PIC 9.\n"
-      + "       01 {$*TOP}.\n"
+      + "       01 {$*TEST2} PIC 9.\n"
+      + "       01 {$*TOP2}.\n"
       + "           05 {$*MIDDLE-1}.\n"
       + "           10 {$*LEAF-1} PIC 9.\n"
       + "           05 {$*MIDDLE-2}.\n"
@@ -81,13 +79,13 @@ class VariableHoverTest {
     assertNotNull(hover);
     MarkedString markedString = hover.getContents().getLeft().get(0).getRight();
     assertEquals("cobol", markedString.getLanguage());
-    assertEquals("01 TEST PIC 9.", markedString.getValue());
+    assertEquals("01 TEST2 PIC 9.", markedString.getValue());
   }
 
   @Test
   void getHoverForStructure() {
     String result =
-        "01 TOP.\n"
+        "01 TOP2.\n"
             + "  05 MIDDLE-2.\n"
             + "    10 LEAF-2 PIC 9.\n"
             + "      88 COND-ITEM1 VALUE 0.\n"
@@ -115,7 +113,6 @@ class VariableHoverTest {
   }
 
   private TextDocumentPositionParams getPosition(int line, int character) {
-    when(uriDecodeService.decode(anyString())).thenReturn(DOCUMENT_URI);
     return new TextDocumentPositionParams(new TextDocumentIdentifier(DOCUMENT_URI), new Position(line, character));
   }
 }

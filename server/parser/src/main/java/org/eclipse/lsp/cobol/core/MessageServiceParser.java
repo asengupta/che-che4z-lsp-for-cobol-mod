@@ -18,10 +18,13 @@
 package org.eclipse.lsp.cobol.core;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import java.util.Arrays;
 import java.util.regex.Pattern;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.TokenStream;
 import org.eclipse.lsp.cobol.common.message.MessageServiceProvider;
+import org.eclipse.lsp.cobol.parser.WarningRecognitionException;
 
 /**
  * Provide the support of message externalization for Parser.
@@ -112,6 +115,18 @@ public abstract class MessageServiceParser extends Parser {
   protected void validateLength(String input, String objectType, Integer validLength) {
     if (input != null && input.length() > validLength) {
       notifyError("parsers.maxLength", objectType, validLength.toString());
+    }
+  }
+
+  /**
+   * Validate allowed variable names and throw an error if it is incorrect
+   *
+   * @param input string to check
+   * @param notAllowedValues arrays of not allowed variable names for Input parameter
+   */
+  protected void validateAllowedVariableName(String input, String... notAllowedValues) {
+    if (input != null && Arrays.asList(notAllowedValues).contains(input.toUpperCase())) {
+      notifyError("parsers.notAllowedVariableName", input);
     }
   }
 

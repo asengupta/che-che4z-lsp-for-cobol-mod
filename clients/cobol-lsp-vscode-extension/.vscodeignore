@@ -25,9 +25,11 @@
 !resources/TELEMETRY_KEY
 !package.json
 !syntaxes/lang-config.json
+!syntaxes/lang-config-hp.json
 !syntaxes/COBOL.tmLanguage.json
 !syntaxes/CICS.tmLanguage.json
 !syntaxes/SQL.tmLanguage.json
+!syntaxes/HP.COBOL.tmLanguage.json
 !schema/pgm_conf.schema.json
 !schema/preprocessor_entry.schema.json
 !schema/proc_grps.schema.json
@@ -35,6 +37,8 @@
 # * bundled extension code
 !dist/extension.js
 !dist/extension.js.map
+!dist/web/extension.js
+!dist/web/extension.js.map
 # ** server implementation 
 !server/native/*
 !server/jar/server.jar
