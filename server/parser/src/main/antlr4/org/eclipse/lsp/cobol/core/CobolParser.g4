@@ -1642,7 +1642,7 @@ searchVarying
    ;
 
 searchWhen
-   : WHEN condition (nextSentenceWrapperStatement | conditionalStatementCall (COMMACHAR? conditionalStatementCall)*?)
+   : WHEN condition conditionalStatementCall (COMMACHAR? conditionalStatementCall)*?
    ;
 
 // send statement
