@@ -44,6 +44,7 @@ import org.eclipse.lsp.cobol.core.engine.analysis.AnalysisContext;
 import org.eclipse.lsp.cobol.implicitDialects.cics.CICSDialect;
 import org.eclipse.lsp.cobol.implicitDialects.cics.CICSVisitorBuilder;
 import org.eclipse.lsp.cobol.implicitDialects.sql.Db2SqlDialect;
+import org.eclipse.lsp.cobol.implicitDialects.sql.Db2SqlVisitorBuilder;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
@@ -187,10 +188,11 @@ public class DialectService {
   }
 
   private ImmutableList<CobolDialect> getImplicitCobolDialects(AnalysisConfig config) {
-      CICSVisitorBuilder visitorBuilder = config.isAddCicsPlaceholder() ? CICSVisitorBuilder.SUBSTITUTING : CICSVisitorBuilder.ORIGINAL;
+      CICSVisitorBuilder cicsVisitorBuilder = config.isAddCicsPlaceholder() ? CICSVisitorBuilder.SUBSTITUTING : CICSVisitorBuilder.ORIGINAL;
+      Db2SqlVisitorBuilder db2SqlVisitorBuilder = config.isAddDb2SqlPlaceholder() ? Db2SqlVisitorBuilder.SUBSTITUTING : Db2SqlVisitorBuilder.ORIGINAL;
       return ImmutableList.of(
-        new CICSDialect(copybookService, messageService, visitorBuilder),
-        new Db2SqlDialect(copybookService, messageService));
+        new CICSDialect(copybookService, messageService, cicsVisitorBuilder),
+        new Db2SqlDialect(copybookService, messageService, db2SqlVisitorBuilder));
   }
 
   private Predicate<CobolDialect> activeImplicitDialect(AnalysisConfig config) {

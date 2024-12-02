@@ -39,18 +39,20 @@ public class AnalysisConfig {
   Map<String, JsonElement> dialectsSettings;
   List<String> compilerOptions = new ArrayList<>();
   boolean addCicsPlaceholder;
+  boolean addDb2SqlPlaceholder;
 
-    public AnalysisConfig(CopybookProcessingMode copybookProcessingMode, List<String> dialects, boolean isCicsTranslatorEnabled, List<DialectRegistryItem> dialectRegistry, Map<String, JsonElement> dialectsSettings, boolean addCicsPlaceholder) {
+    public AnalysisConfig(CopybookProcessingMode copybookProcessingMode, List<String> dialects, boolean isCicsTranslatorEnabled, List<DialectRegistryItem> dialectRegistry, Map<String, JsonElement> dialectsSettings, boolean addCicsPlaceholder, boolean addDb2SqlPlaceholder) {
         this.copybookProcessingMode = copybookProcessingMode;
         this.dialects = dialects;
         this.isCicsTranslatorEnabled = isCicsTranslatorEnabled;
         this.dialectRegistry = dialectRegistry;
         this.dialectsSettings = dialectsSettings;
         this.addCicsPlaceholder = addCicsPlaceholder;
+        this.addDb2SqlPlaceholder = addDb2SqlPlaceholder;
     }
 
     public AnalysisConfig(CopybookProcessingMode copybookProcessingMode, List<String> dialects, boolean isCicsTranslatorEnabled, List<DialectRegistryItem> dialectRegistry, Map<String, JsonElement> dialectsSettings) {
-        this(copybookProcessingMode, dialects, isCicsTranslatorEnabled, dialectRegistry, dialectsSettings, false);
+        this(copybookProcessingMode, dialects, isCicsTranslatorEnabled, dialectRegistry, dialectsSettings, false, false);
     }
 
     /**
@@ -75,7 +77,7 @@ public class AnalysisConfig {
         ImmutableList.of("IDMS"),
         true,
         ImmutableList.of(new DialectRegistryItem("IDMS", URI.create(String.format("file://%s", dialectJarPath)), "Some Description", "Some ID")),
-        ImmutableMap.of("target-sql-backend", new Gson().toJsonTree(SQLBackend.DB2_SERVER)), true);
+        ImmutableMap.of("target-sql-backend", new Gson().toJsonTree(SQLBackend.DB2_SERVER)), true, true);
   }
 
   public static AnalysisConfig substitutingDefaultConfig(CopybookProcessingMode mode) {
@@ -84,6 +86,6 @@ public class AnalysisConfig {
         ImmutableList.of(),
         true,
         ImmutableList.of(),
-        ImmutableMap.of("target-sql-backend", new Gson().toJsonTree(SQLBackend.DB2_SERVER)), true);
+        ImmutableMap.of("target-sql-backend", new Gson().toJsonTree(SQLBackend.DB2_SERVER)), true, true);
   }
 }
