@@ -31,6 +31,6 @@ public interface Db2SqlVisitorBuilder {
      * @return MarkerDb2SqlVisitor
      */
     MarkerDb2SqlVisitor visitor(DialectProcessingContext context, MessageService messageService, CopybookService copybookService);
-    Db2SqlVisitorBuilder ORIGINAL = (context, messageService, copybookService) -> new Db2SqlVisitor(0, context, messageService, copybookService);
-    Db2SqlVisitorBuilder SUBSTITUTING = (context, messageService, copybookService) -> new Db2SqlSubstitutingVisitor(0, context, messageService, copybookService);
+    Db2SqlVisitorBuilder ORIGINAL = Db2SqlVisitor::new;
+    Db2SqlVisitorBuilder SUBSTITUTING = Db2SqlSubstitutingVisitor::new;
 }

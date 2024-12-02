@@ -62,7 +62,7 @@ import static java.util.stream.Collectors.toList;
 @AllArgsConstructor
 class Db2SqlSubstitutingVisitor extends MarkerDb2SqlVisitor {
 
-    @Getter private int extractions = 0;
+    @Getter private int extractions;
     private final DialectProcessingContext context;
     private final MessageService messageService;
     private final CopybookService copybookService;
@@ -71,6 +71,12 @@ class Db2SqlSubstitutingVisitor extends MarkerDb2SqlVisitor {
 
 //    @Getter
 //    private final List<SyntaxError> errors = new LinkedList<>();
+
+    Db2SqlSubstitutingVisitor(DialectProcessingContext context, MessageService messageService, CopybookService copybookService) {
+        this.context = context;
+        this.messageService = messageService;
+        this.copybookService = copybookService;
+    }
 
     @Override
     public List<Node> visitDbs_host_variable(Db2SqlParser.Dbs_host_variableContext ctx) {

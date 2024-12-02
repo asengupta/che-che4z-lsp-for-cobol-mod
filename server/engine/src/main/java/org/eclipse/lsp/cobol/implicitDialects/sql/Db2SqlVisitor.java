@@ -47,6 +47,7 @@ import org.eclipse.lsp.cobol.common.model.Locality;
 import org.eclipse.lsp.cobol.common.model.tree.Node;
 import org.eclipse.lsp.cobol.common.model.tree.variable.*;
 import org.eclipse.lsp.cobol.core.visitor.VisitorHelper;
+import org.eclipse.lsp.cobol.implicitDialects.cics.MarkerDb2SqlVisitor;
 import org.eclipse.lsp.cobol.implicitDialects.sql.node.*;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
@@ -58,7 +59,7 @@ import org.eclipse.lsp4j.Range;
  */
 @Slf4j
 @AllArgsConstructor
-class Db2SqlVisitor extends Db2SqlParserBaseVisitor<List<Node>> {
+class Db2SqlVisitor extends MarkerDb2SqlVisitor {
 
     private final DialectProcessingContext context;
     private final MessageService messageService;
